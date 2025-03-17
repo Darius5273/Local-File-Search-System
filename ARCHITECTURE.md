@@ -41,7 +41,7 @@ This architecture ensures a scalable and efficient local file search system with
 
 ### Legend
 
-![Component Diagram](SD-Legend.drawio.png)
+![Component Diagram](images/SD-Legend.drawio.png)
 
 
 
