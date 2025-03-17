@@ -39,7 +39,9 @@ The **File Crawler Component** scans files recursively within the local file sys
 
 This architecture ensures a scalable and efficient local file search system with optimized indexing and retrieval mechanisms, providing users with fast and relevant search results.
 
+### Legend
 
+![Component Diagram](SD-Legend.drawio.png)
 
 
 
