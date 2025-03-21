@@ -1,4 +1,1 @@
-C:\Users\Lenovo\AppData\Local\Programs\CLion\bin\cmake\win\x64\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/ninja/win/x64/ninja.exe -G Ninja -S "D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend" -B "D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\cmake-build-debug"
--- Configuring done (0.1s)
--- Generating done (0.0s)
--- Build files have been written to: D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/cmake-build-debug
+CMakeLists.txt not found in D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend Select CMakeLists.txt

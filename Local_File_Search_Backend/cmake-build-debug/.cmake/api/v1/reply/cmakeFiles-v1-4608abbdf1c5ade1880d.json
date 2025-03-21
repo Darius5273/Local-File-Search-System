@@ -9,6 +9,15 @@
 			"path" : "cmake-build-debug/CMakeFiles/3.27.8/CMakeSystem.cmake"
 		},
 		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/CMakeDependentOption.cmake"
+		},
+		{
 			"isCMake" : true,
 			"isExternal" : true,
 			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/CMakeSystemSpecificInitialize.cmake"
@@ -149,6 +158,55 @@
 			"isCMake" : true,
 			"isExternal" : true,
 			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/CMakeCommonLanguageInclude.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/installed/x64-windows/share/libpqxx/libpqxx-config-version.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/installed/x64-windows/share/libpqxx/libpqxx-config.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/CMakeFindDependencyMacro.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/installed/x64-windows/share/postgresql/vcpkg-cmake-wrapper.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/FindPostgreSQL.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/SelectLibraryConfigurations.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/FindPackageHandleStandardArgs.cmake"
+		},
+		{
+			"isCMake" : true,
+			"isExternal" : true,
+			"path" : "C:/Users/Lenovo/AppData/Local/Programs/CLion/bin/cmake/win/x64/share/cmake-3.27/Modules/FindPackageMessage.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/installed/x64-windows/share/libpqxx/libpqxx-targets.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/installed/x64-windows/share/libpqxx/libpqxx-targets-debug.cmake"
+		},
+		{
+			"isExternal" : true,
+			"path" : "D:/vcpkg/installed/x64-windows/share/libpqxx/libpqxx-targets-release.cmake"
 		}
 	],
 	"kind" : "cmakeFiles",

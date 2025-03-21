@@ -1,0 +1,3 @@
+D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/build/CMakeFiles/Local_File_Search.dir
+D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/build/CMakeFiles/ALL_BUILD.dir
+D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/build/CMakeFiles/ZERO_CHECK.dir
