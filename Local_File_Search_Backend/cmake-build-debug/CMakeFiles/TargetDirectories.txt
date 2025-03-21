@@ -1,0 +1,3 @@
+D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/cmake-build-debug/CMakeFiles/Local_File_Search.dir
+D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/cmake-build-debug/CMakeFiles/rebuild_cache.dir
