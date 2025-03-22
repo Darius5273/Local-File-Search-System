@@ -1,7 +1,0 @@
-# ninja log v5
-0	109	7643018819869031	build.ninja	8e3c527f675126df
-9	330	7643013887588801	CMakeFiles/Local_File_Search.dir/src/SearchResult.cpp.obj	99bcfcf185d94542
-3	423	7643013888549543	CMakeFiles/Local_File_Search.dir/src/main.cpp.obj	7398dc1de7a65352
-3	841	7643018627953372	Local_File_Search.exe	603845b2b007d6e7
-7	337	7643013887665826	CMakeFiles/Local_File_Search.dir/src/FileMetadata.cpp.obj	fd1c0b2fda48e575
-1	111	7643018819869031	build.ninja	8e3c527f675126df

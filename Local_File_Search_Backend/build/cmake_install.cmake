@@ -1,8 +1,8 @@
-# Install script for directory: D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend/build
+# Install script for directory: D:/UTCN/An_3_2/SD/Lab/Project/Local File Seach System/Local-File-Search-System/Local_File_Search_Backend
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/Local_File_Search")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files (x86)/Local_File_Search_Backend")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

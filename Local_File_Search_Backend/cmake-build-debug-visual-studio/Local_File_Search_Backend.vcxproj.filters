@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\src\FileMetadata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\src\SearchResult.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\src\DatabaseConnector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\include\FileMetadata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\include\SearchResult.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\include\DatabaseConnector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\UTCN\An_3_2\SD\Lab\Project\Local File Seach System\Local-File-Search-System\Local_File_Search_Backend\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{4BA76DA0-F314-340B-81F9-0B0CA7851C23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{C95F608A-1FD6-3452-8019-E967740DFF02}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
