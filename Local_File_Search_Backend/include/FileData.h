@@ -1,22 +1,24 @@
-#ifndef FILE_METADATA_H
-#define FILE_METADATA_H
+#ifndef FILE_DATA_H
+#define FILE_DATA_H
 
 #include <string>
 
-class FileMetadata {
+class FileData {
 public:
+    std::string id;
     std::string name;
     std::string path;
     std::string extension;
     std::string mime_type;
     std::string modified_time;
     std::string created_at;
+    bool is_text;
     long long size;
 
-    FileMetadata(const std::string& name, const std::string& path,
+    FileData(const std::string& name, const std::string& path,
                  const std::string& extension, const std::string& mime_type,
                  const std::string& modified_time, const std::string& created_at,
-                 long long size);
+                 long long size, bool is_text);
 };
 
-#endif // FILE_METADATA_H
+#endif // FILE_DATA_H
