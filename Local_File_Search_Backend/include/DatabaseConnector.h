@@ -3,22 +3,24 @@
 
 #include <pqxx/pqxx>
 #include <vector>
-#include "FileMetadata.h"
+#include "FileData.h"
 #include "SearchResult.h"
 
 class DatabaseConnector {
 private:
-    std::string connectionString;
+    std::string connectionString = "host=localhost port=5432 dbname=local_files user=postgres password=tresspress79";
     pqxx::connection* conn;
 
 public:
-    DatabaseConnector(const std::string& connStr);
+    DatabaseConnector();
     ~DatabaseConnector();
 
     void connect();
     void disconnect();
-    void insertBatch(const std::vector<FileMetadata>& files);
+    void insertBatch(const std::vector<FileData>& files);
     std::vector<SearchResult> query(const std::string& searchTerm, bool searchContent);
 };
+
+
 
 #endif // DATABASE_CONNECTOR_H
