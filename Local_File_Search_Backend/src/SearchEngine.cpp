@@ -1,7 +1,7 @@
 #include "../include/SearchEngine.h"
 
 SearchEngine::SearchEngine(DatabaseConnector* database)
-        : db(database) {}
+        : db(database) {database->connect();}
 
 void SearchEngine::setSearchContent(bool flag) {
     searchContent = flag;
