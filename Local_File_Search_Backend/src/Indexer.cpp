@@ -51,8 +51,8 @@ double Indexer::getAverageFileSize() {
     return (filesIndexed > 0) ? static_cast<double>(totalFileSize) / filesIndexed : 0;
 }
 
-double Indexer::getTotalTimeInSeconds() {
-    return std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+double Indexer::getTotalTimeInMilliseconds() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 }
 
 void Indexer::generateReport() {
@@ -62,7 +62,7 @@ void Indexer::generateReport() {
     reportContent << "Total Files Indexed: " << filesIndexed << "\n";
     reportContent << "Total Files Ignored: " << filesIgnored << "\n";
     reportContent << "Average File Size: " << getAverageFileSize() << " bytes\n";
-    reportContent << "Total Time Taken: " << getTotalTimeInSeconds() << " seconds\n";
+    reportContent << "Total Time Taken: " << getTotalTimeInMilliseconds() << " milliseconds\n";
 
     std::string report = reportContent.str();
     if (reportFile.is_open()) {

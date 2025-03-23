@@ -26,5 +26,5 @@ public:
     void incrementIndexedFiles(long long fileSize);
     void incrementIgnoredFiles();
     double getAverageFileSize();
-    double getTotalTimeInSeconds();
+    double getTotalTimeInMilliseconds();
 };
