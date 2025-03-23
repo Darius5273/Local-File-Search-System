@@ -5,10 +5,10 @@
 
 namespace fs = std::filesystem;
 
-void FileCrawler::scanDirectory(const std::string& directoryPath) {
+void FileCrawler::scanDirectory() {
     indexer->startCrawlingTimer();
 
-    for (auto it = fs::recursive_directory_iterator(directoryPath); it != fs::recursive_directory_iterator(); ++it) {
+    for (auto it = fs::recursive_directory_iterator(rootDirectory); it != fs::recursive_directory_iterator(); ++it) {
         const auto& entry = *it;
         if (fs::is_directory(entry)) {
             if (ignoreDirectories.count(entry.path().filename().string()) > 0) {
@@ -31,7 +31,26 @@ void FileCrawler::scanDirectory(const std::string& directoryPath) {
             indexer->incrementIndexedFiles(metadata.size);
         }
     }
-
-    indexer->endCrawlingTimer();
     indexer->finalizeIndexing();
 }
+
+void print_unordered_set(const std::unordered_set<std::string>& set) {
+    for (const auto& element : set) {
+        std::cout << element << " ";
+    }
+    std::cout << std::endl;
+}
+
+void FileCrawler::setRootDirectory(const std::string& root){
+    rootDirectory = root;
+    std::cout<<root;
+}
+void FileCrawler::setIgnoreDirectories(const std::unordered_set<std::string>& dirs){
+    ignoreDirectories = dirs;
+    print_unordered_set(ignoreDirectories);
+}
+void FileCrawler::setIgnoreFiles(const std::unordered_set<std::string>& files){
+    ignoreFiles = files;
+    print_unordered_set(ignoreFiles);
+}
+

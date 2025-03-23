@@ -19,7 +19,10 @@ public:
                 const std::unordered_set<std::string>& ignoreFiles, Indexer* idx)
             : rootDirectory(root), ignoreDirectories(ignoreDirs), ignoreFiles(ignoreFiles), indexer(idx) {}
 
-    void scanDirectory(const std::string& directoryPath);
+    void scanDirectory();
+    void setRootDirectory(const std::string& root);
+    void setIgnoreDirectories(const std::unordered_set<std::string>& dirs);
+    void setIgnoreFiles(const std::unordered_set<std::string>& files);
 };
 
 #endif // FILE_CRAWLER_H
