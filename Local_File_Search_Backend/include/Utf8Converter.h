@@ -42,4 +42,44 @@ public:
 
         return wideStr;
     }
+
+    static std::string CleanInvalidUtf8(const std::string str) {
+        std::string cleanStr;
+        cleanStr.reserve(str.size());
+
+        for (int i = 0; i < str.size();) {
+            unsigned char c = str[i];
+
+            if ((c & 0x80) == 0) {
+                cleanStr += c;
+                i++;
+            }
+            else if ((c & 0xE0) == 0xC0 && i + 1 < str.size() && (str[i + 1] & 0xC0) == 0x80) {
+                cleanStr += c;
+                cleanStr += str[i + 1];
+                i += 2;
+            }
+            else if ((c & 0xF0) == 0xE0 && i + 2 < str.size() &&
+                     (str[i + 1] & 0xC0) == 0x80 && (str[i + 2] & 0xC0) == 0x80) {
+                cleanStr += c;
+                cleanStr += str[i + 1];
+                cleanStr += str[i + 2];
+                i += 3;
+            }
+            else if ((c & 0xF8) == 0xF0 && i + 3 < str.size() &&
+                     (str[i + 1] & 0xC0) == 0x80 && (str[i + 2] & 0xC0) == 0x80 && (str[i + 3] & 0xC0) == 0x80) {
+                cleanStr += c;
+                cleanStr += str[i + 1];
+                cleanStr += str[i + 2];
+                cleanStr += str[i + 3];
+                i += 4;
+            }
+            else {
+                cleanStr += '?';
+                i++;
+            }
+        }
+
+        return cleanStr;
+    }
 };
