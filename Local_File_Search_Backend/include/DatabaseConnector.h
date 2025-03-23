@@ -8,7 +8,7 @@
 
 class DatabaseConnector {
 private:
-    std::string connectionString = "host=localhost port=5432 dbname=local_files user=postgres password=";
+    std::string connectionString = "host=localhost port=5432 dbname=local_files user=postgres password=tresspress79";
     pqxx::connection* conn;
 
 public:
@@ -18,7 +18,8 @@ public:
     void connect();
     void disconnect();
     void insertBatch(const std::vector<FileData>& files);
-    std::vector<SearchResult> query(const std::string& searchTerm, bool searchContent);
+    std::vector<SearchResult>query(const std::string& searchTerm, bool searchContent);
+
 };
 
 

@@ -92,9 +92,10 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
         std::string sql;
 
         if (searchContent) {
-            sql = "SELECT f.path, ts_headline('simple', fc.content_text, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
-                  "FROM file_content fc JOIN files f ON f.id = fc.file_id "
-                  "WHERE fc.content_text @@ plainto_tsquery($1);";
+            sql = "SELECT f.path, ts_headline('simple', tc.content, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
+                  "FROM textual_content tc JOIN files f ON f.id = tc.file_id "
+                  "WHERE tc.content @@ plainto_tsquery($1 || ':*') "
+                  "LIMIT 3;";
         } else {
             sql = "SELECT path FROM files WHERE LOWER(name) LIKE LOWER('%' || $1 || '%');";
         }
