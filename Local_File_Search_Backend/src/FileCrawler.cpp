@@ -1,5 +1,6 @@
 
 #include "../include/FileCrawler.h"
+#include "../include/Utf8Converter.h"
 #include <iostream>
 #include <filesystem>
 
@@ -21,7 +22,7 @@ void FileCrawler::scanDirectory() {
                 continue;
             }
         } else if (fs::is_regular_file(entry)) {
-            if (ignoreFiles.count(entry.path().filename().string()) > 0) {
+            if (ignoreFiles.count(Utf8Converter::WideToUtf8(entry.path().filename().wstring())) > 0) {
                 indexer->incrementIgnoredFiles();
                 continue;
             }

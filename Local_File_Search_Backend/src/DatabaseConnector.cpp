@@ -1,4 +1,5 @@
 #include "../include/DatabaseConnector.h"
+#include "../include/Utf8Converter.h"
 #include <iostream>
 #include <fstream>
 DatabaseConnector::DatabaseConnector()
@@ -77,9 +78,9 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
                 executeTextualContentQuery = true;
                 std::ifstream fileStream(file.path);
                 if (fileStream) {
-                    std::ostringstream contentBuffer;
+                    std::wostringstream contentBuffer;
                     contentBuffer << fileStream.rdbuf();
-                    textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(contentBuffer.str()) + ") ";
+                    textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(Utf8Converter::WideToUtf8(contentBuffer.str())) + ") ";
                 }
                 if(rowCount == 20)
                 {

@@ -1,9 +1,11 @@
 
 #include "../include/FileMetadataExtractor.h"
+#include "../include/Utf8Converter.h"
+
 
 FileData FileMetadataExtractor::extractMetadata(const fs::directory_entry& entry) {
-    std::string name = entry.path().filename().string();
-    std::string path = entry.path().string();
+    std::string name = Utf8Converter::WideToUtf8(entry.path().filename().wstring());
+    std::string path = Utf8Converter::WideToUtf8(entry.path().wstring());
     std::string extension = entry.path().extension().string();
     std::string mime_type = getMimeType(extension);
     long long size = fs::file_size(entry);
