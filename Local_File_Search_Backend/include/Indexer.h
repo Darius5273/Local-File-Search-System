@@ -7,7 +7,7 @@ private:
     int batchSize = 100;
     int totalFilesIndexed;
     std::vector<std::string> indexedFiles;
-    std::string reportFilePath = "index_progress_report.txt";
+    std::string reportFilePath = "../../index_progress_report.txt";
     int filesIndexed;
     int filesIgnored;
     long long totalFileSize;
@@ -15,8 +15,7 @@ private:
     std::chrono::steady_clock::time_point endTime;
 
 public:
-    Indexer(DatabaseConnector* db) : dbConnector(db), filesIgnored(0), filesIndexed(0),
-                                     totalFileSize(0), totalFilesIndexed(0) {}
+    Indexer(DatabaseConnector* db);
 
     void addFile(const FileData& file);
     void processBatch();

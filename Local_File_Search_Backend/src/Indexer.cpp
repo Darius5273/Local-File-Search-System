@@ -4,6 +4,9 @@
 #include <fstream>
 #include <iostream>
 
+Indexer::Indexer(DatabaseConnector* db) : dbConnector(db), filesIgnored(0), filesIndexed(0),
+                                          totalFileSize(0), totalFilesIndexed(0) {}
+
 void Indexer::addFile(const FileData& file) {
     fileBatch.push_back(file);
     indexedFiles.push_back(file.path);
@@ -20,16 +23,19 @@ void Indexer::processBatch() {
 
 void Indexer::finalizeIndexing() {
     if (!fileBatch.empty()) processBatch();
+    endCrawlingTimer();
     generateReport();
 }
 
 
 void Indexer::startCrawlingTimer() {
+    dbConnector->connect();
     startTime = std::chrono::steady_clock::now();
 }
 
 void Indexer::endCrawlingTimer() {
     endTime = std::chrono::steady_clock::now();
+    dbConnector->disconnect();
 }
 
 void Indexer::incrementIndexedFiles(long long fileSize) {
@@ -51,12 +57,16 @@ double Indexer::getTotalTimeInSeconds() {
 
 void Indexer::generateReport() {
     std::ofstream reportFile(reportFilePath);
+    std::stringstream reportContent;
+    reportContent << "Indexing Report\n\n";
+    reportContent << "Total Files Indexed: " << filesIndexed << "\n";
+    reportContent << "Total Files Ignored: " << filesIgnored << "\n";
+    reportContent << "Average File Size: " << getAverageFileSize() << " bytes\n";
+    reportContent << "Total Time Taken: " << getTotalTimeInSeconds() << " seconds\n";
+
+    std::string report = reportContent.str();
     if (reportFile.is_open()) {
-        reportFile << "Indexing Report\n\n";
-        reportFile << "Total Files Indexed: " << filesIndexed << "\n";
-        reportFile << "Total Files Ignored: " << filesIgnored << "\n";
-        reportFile << "Average File Size: " << getAverageFileSize() << " bytes\n";
-        reportFile << "Total Time Taken: " << getTotalTimeInSeconds() << " seconds\n";
+        reportFile << report;
         reportFile.close();
     } else {
         std::cerr << "Error: Unable to write report to " << reportFilePath << std::endl;
