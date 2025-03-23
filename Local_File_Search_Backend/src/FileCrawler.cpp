@@ -26,6 +26,10 @@ void FileCrawler::scanDirectory() {
                 indexer->incrementIgnoredFiles();
                 continue;
             }
+            else if (entry.path().filename().string().rfind("~$",0) == 0)
+            {
+                continue;
+            }
 
             FileData metadata = fileMetadataExtractor.extractMetadata(entry);
             indexer->addFile(metadata);

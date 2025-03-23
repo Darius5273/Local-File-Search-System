@@ -13,13 +13,16 @@ FileData FileMetadataExtractor::extractMetadata(const fs::directory_entry& entry
     std::string modified_time = getFormattedTime(fs::last_write_time(entry));
     std::string created_at = getFormattedTime(fs::last_write_time(entry));
 
-    bool is_text = mime_type.rfind("text", 0) == 0;
+    bool is_text = mime_type.rfind("text", 0) == 0 ||
+            mime_type.find("pdf") != std::string::npos ||
+            mime_type.find("word") != std::string::npos;
 
     return FileData(name, path, extension, mime_type, modified_time, created_at, size, is_text);
 }
 
 std::string FileMetadataExtractor::getMimeType(const std::string& extension) {
-    if (extension == ".txt" || extension == ".log" || extension == ".csv") return "text/plain";
+    if (extension == ".txt" || extension == ".log" || extension == ".cpp") return "text/plain";
+    if (extension == ".csv") return "text/csv";
     if (extension == ".pdf") return "application/pdf";
     if (extension == ".jpg" || extension == ".jpeg") return "image/jpeg";
     if (extension == ".png") return "image/png";

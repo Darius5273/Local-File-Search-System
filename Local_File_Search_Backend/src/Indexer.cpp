@@ -30,6 +30,10 @@ void Indexer::finalizeIndexing() {
 
 void Indexer::startCrawlingTimer() {
     dbConnector->connect();
+    filesIgnored = 0;
+    filesIndexed = 0;
+    totalFileSize = 0;
+    totalFilesIndexed = 0;
     startTime = std::chrono::steady_clock::now();
 }
 

@@ -1,5 +1,6 @@
 #include "../include/DatabaseConnector.h"
 #include "../include/Utf8Converter.h"
+#include "../include/TextExtractor.h"
 #include <iostream>
 #include <fstream>
 DatabaseConnector::DatabaseConnector()
@@ -57,7 +58,8 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
         std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, created_at, modified_time) VALUES ";
         std::string textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
         bool executeTextualContentQuery = false;
-        int rowCount = 0;
+        int sizeThreshold = 8 * 1024 * 1024;
+        int currentSize = 0;
         std::string metadataValues;
         for (size_t i = 0; i < files.size(); ++i) {
             const auto& file = files[i];
@@ -72,23 +74,22 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
                 metadataValues += ", ";
             }
             if (file.is_text) {
-                rowCount++;
+                currentSize += file.size;
+
                 if(executeTextualContentQuery)
                     textualContentQuery += ", ";
                 executeTextualContentQuery = true;
-                std::ifstream fileStream(file.path);
-                if (fileStream) {
-                    std::wostringstream contentBuffer;
-                    contentBuffer << fileStream.rdbuf();
-                    textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(Utf8Converter::WideToUtf8(contentBuffer.str())) + ") ";
-                }
-                if(rowCount == 20)
+
+                std::string fileContent = TextExtractor::GetFileContent(files[i]);
+                textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(fileContent) + ") ";
+
+                if(sizeThreshold <= currentSize)
                 {
                     textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
                     txn.exec(textualContentQuery);
                     textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
                     executeTextualContentQuery = false;
-                    rowCount = 0;
+                    currentSize = 0;
                 }
             }
         }
