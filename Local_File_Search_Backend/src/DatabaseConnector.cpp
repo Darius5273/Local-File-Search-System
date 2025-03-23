@@ -1,7 +1,6 @@
 #include "../include/DatabaseConnector.h"
 #include <iostream>
 #include <fstream>
-
 DatabaseConnector::DatabaseConnector()
         : conn(nullptr) {}
 
@@ -32,24 +31,47 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
         pqxx::work txn(*conn);
 
         std::string filesQuery = "INSERT INTO files (id, name, path) VALUES ";
+        std::string filesValues;
+        for (size_t i = 0; i < files.size(); ++i) {
+            const auto& file = files[i];
+            filesValues += "(" + txn.quote(file.id) + ", "
+                           + txn.quote(file.name) + ", "
+                           + txn.quote(file.path) + ")";
+            if (i != files.size() - 1) {
+                filesValues += ", ";
+            }
+        }
+        filesQuery += filesValues;
+        filesQuery += " ON CONFLICT (path) DO UPDATE SET name = EXCLUDED.name RETURNING id, path;";
+
+        std::unordered_map<std::string, std::string> pathToIdMap;
+
+        pqxx::result fileResult = txn.exec(filesQuery);
+        for (const auto& row : fileResult) {
+            std::string returnedId = row["id"].as<std::string>();
+            std::string returnedPath = row["path"].as<std::string>();
+            pathToIdMap[returnedPath] = returnedId;
+        }
+
         std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, created_at, modified_time) VALUES ";
         std::string textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
         bool executeTextualContentQuery = false;
-
+        int rowCount = 0;
+        std::string metadataValues;
         for (size_t i = 0; i < files.size(); ++i) {
-            const FileData& file = files[i];
-            filesQuery += "(" + txn.quote(file.id) + ", "
-                          + txn.quote(file.name) + ", "
-                          + txn.quote(file.path) + ")";
-
-            metadataQuery += "(" + txn.quote(file.id) + ", "
-                             + std::to_string(file.size) + ", "
-                             + txn.quote(file.extension) + ", "
-                             + txn.quote(file.mime_type) + ", "
-                             + txn.quote(file.created_at) + ", "
-                             + txn.quote(file.modified_time) + ")";
-
+            const auto& file = files[i];
+            const auto& correctId = pathToIdMap[file.path];
+            metadataValues += "(" + txn.quote(correctId) + ", "
+                              + std::to_string(file.size) + ", "
+                              + txn.quote(file.extension) + ", "
+                              + txn.quote(file.mime_type) + ", "
+                              + txn.quote(file.created_at) + ", "
+                              + txn.quote(file.modified_time) + ")";
+            if (i != files.size() - 1) {
+                metadataValues += ", ";
+            }
             if (file.is_text) {
+                rowCount++;
                 if(executeTextualContentQuery)
                     textualContentQuery += ", ";
                 executeTextualContentQuery = true;
@@ -57,22 +79,23 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
                 if (fileStream) {
                     std::ostringstream contentBuffer;
                     contentBuffer << fileStream.rdbuf();
-                    textualContentQuery += "(" + txn.quote(file.id) + ", " + txn.quote(contentBuffer.str()) + ") ";
+                    textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(contentBuffer.str()) + ") ";
+                }
+                if(rowCount == 20)
+                {
+                    textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
+                    txn.exec(textualContentQuery);
+                    textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
+                    executeTextualContentQuery = false;
+                    rowCount = 0;
                 }
             }
-
-            if (i != files.size() - 1) {
-                filesQuery += ", ";
-                metadataQuery += ", ";
-            }
         }
-
-        filesQuery += " ON CONFLICT (path) DO UPDATE SET name = EXCLUDED.name;";
+        metadataQuery += metadataValues;
         metadataQuery += " ON CONFLICT (id) DO UPDATE SET size = EXCLUDED.size, extension = EXCLUDED.extension, mime_type = EXCLUDED.mime_type, created_at = EXCLUDED.created_at, modified_time = EXCLUDED.modified_time;";
         textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
-
-        txn.exec(filesQuery);
         txn.exec(metadataQuery);
+
         if (executeTextualContentQuery) {
             txn.exec(textualContentQuery);
         }
@@ -80,9 +103,10 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
         txn.commit();
 
     } catch (const std::exception& e) {
-        std::cerr << "Insert batch error: " << e.what() << std::endl;
+        std::cerr << "Batch insert error: " << e.what() << std::endl;
     }
 }
+
 
 
 std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm, bool searchContent) {
