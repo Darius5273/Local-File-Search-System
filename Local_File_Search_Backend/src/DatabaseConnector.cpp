@@ -123,14 +123,17 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
                   "WHERE tc.content @@ plainto_tsquery($1 || ':*') "
                   "LIMIT 3;";
         } else {
-            sql = "SELECT path FROM files WHERE LOWER(name) LIKE LOWER('%' || $1 || '%');";
+            sql = "SELECT f.path, substring(tc.content FROM '(^(\\S+\\s+){100}(\\S+))') AS preview "
+                  "FROM files f JOIN textual_content tc ON f.id = tc.file_id "
+                  "WHERE LOWER(name) LIKE LOWER('%' || $1 || '%') "
+                  "LIMIT 3;";
         }
 
         pqxx::result res = txn.exec_params(sql, searchTerm);
 
         for (auto row : res) {
             std::string path = row["path"].c_str();
-            std::string preview = searchContent ? row["preview"].c_str() : "";
+            std::string preview = row["preview"].c_str();
             results.emplace_back(path, preview);
         }
     } catch (const std::exception& e) {
