@@ -9,8 +9,10 @@
 #include <comutil.h>
 #include <iostream>
 #include <filesystem>
-#include <tlhelp32.h>
+#include <minwindef.h>
 
+const size_t CHUNK_SIZE = 64 * 1024;
+const size_t MAX_SIZE = 0.88 * 1024 * 1024;
 
 
 namespace fs = std::filesystem;
@@ -22,28 +24,32 @@ std::string TextExtractor::ExtractTextFromPDF(const std::string& pdfPath) {
     int result = system(command.c_str());
 
     if (result != 0) {
-        std::cerr<<"Failed to run pdftotext on: " + pdfPath;
+        throw std::runtime_error("Failed to run pdftotext on: " + pdfPath + "\n");
     }
 
     std::ifstream inFile(tempOutput);
     if (!inFile) {
-        std::cerr<<"Failed to open extracted text file";
+        throw std::runtime_error("Failed to open extracted text file: " + tempOutput);
     }
     std::ostringstream textBuffer;
-    textBuffer << inFile.rdbuf();
+    char buffer[CHUNK_SIZE];
+    size_t totalBytesRead = 0;
+
+    while (totalBytesRead < MAX_SIZE && inFile) {
+        inFile.read(buffer, min(CHUNK_SIZE, MAX_SIZE - totalBytesRead));
+        size_t bytesRead = inFile.gcount();
+
+        if (bytesRead > 0) {
+            textBuffer.write(buffer, bytesRead);
+            totalBytesRead += bytesRead;
+        }
+    }
     inFile.close();
 
     std::remove(tempOutput.c_str());
 
     return Utf8Converter::CleanInvalidUtf8(textBuffer.str());
 }
-
-DWORD GetProcessIdFromHWND(HWND hwnd) {
-    DWORD pid = 0;
-    GetWindowThreadProcessId(hwnd, &pid);
-    return pid;
-}
-
 
 std::string TextExtractor::ExtractTextFromWord(const std::wstring& docPath) {
     CoInitialize(NULL);
@@ -128,7 +134,12 @@ std::string TextExtractor::ExtractTextFromWord(const std::wstring& docPath) {
     }
 
     _bstr_t b(textResult.bstrVal);
-    std::string text = static_cast<char*>(b);
+    const char *rawText = static_cast<char*>(b);
+
+    const size_t MAX_SIZE = 1024 * 1024;
+    size_t textLength = strlen(rawText);
+    size_t sizeToCopy = (textLength > MAX_SIZE) ? MAX_SIZE : textLength;
+    std::string text(rawText, sizeToCopy);
 
     DISPID quitID;
     OLECHAR* quitName = L"Quit";
@@ -154,13 +165,22 @@ std::string TextExtractor::ParseCSV(const std::string& csvPath) {
     if (!file.is_open())
         std::cerr<<"Cannot open CSV file: " << csvPath;
 
-    std::string result;
-    std::string line;
-    while (getline(file, line)) {
 
-        result += line + '\n';
+    std::ostringstream resultBuffer;
+    std::string line;
+    size_t totalBytesRead = 0;
+
+    while (std::getline(file, line) && totalBytesRead < MAX_SIZE) {
+        if (totalBytesRead + line.size() + 1 > MAX_SIZE) {
+            line = line.substr(0, MAX_SIZE - totalBytesRead - 1);
+        }
+        resultBuffer << line << '\n';
+        totalBytesRead += line.size() + 1;
     }
-    return Utf8Converter::CleanInvalidUtf8(result);
+
+    std::string text = resultBuffer.str();
+
+    return Utf8Converter::CleanInvalidUtf8(text);
 }
 
 
@@ -181,9 +201,20 @@ std::string TextExtractor::GetFileContent(const FileData& fileData) {
             std::ifstream fileStream(fileData.path);
             if (!fileStream)
                 std::cerr <<"Failed to open file";
-            std::ostringstream contentBuffer;
-            contentBuffer << fileStream.rdbuf();
-            return Utf8Converter::CleanInvalidUtf8(contentBuffer.str());
+            std::ostringstream textBuffer;
+            char buffer[CHUNK_SIZE];
+            size_t totalBytesRead = 0;
+
+            while (totalBytesRead < MAX_SIZE && fileStream) {
+                fileStream.read(buffer, min(CHUNK_SIZE, MAX_SIZE - totalBytesRead));
+                size_t bytesRead = fileStream.gcount();
+
+                if (bytesRead > 0) {
+                    textBuffer.write(buffer, bytesRead);
+                    totalBytesRead += bytesRead;
+                }
+            }
+            return Utf8Converter::CleanInvalidUtf8(textBuffer.str());
         }
     }
     catch (const std::exception& ex) {

@@ -58,8 +58,8 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
         std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, created_at, modified_time) VALUES ";
         std::string textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
         bool executeTextualContentQuery = false;
-        int sizeThreshold = 8 * 1024 * 1024;
-        int currentSize = 0;
+        long long sizeThreshold = 8 * 1024 * 1024;
+        long long currentSize = 0;
         std::string metadataValues;
         for (size_t i = 0; i < files.size(); ++i) {
             const auto& file = files[i];
@@ -75,21 +75,25 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
             }
             if (file.is_text) {
                 currentSize += file.size;
-
-                if(executeTextualContentQuery)
-                    textualContentQuery += ", ";
-                executeTextualContentQuery = true;
-
-                std::string fileContent = TextExtractor::GetFileContent(files[i]);
-                textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(fileContent) + ") ";
-
-                if(sizeThreshold <= currentSize)
+                if(sizeThreshold <= currentSize && executeTextualContentQuery)
                 {
                     textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
                     txn.exec(textualContentQuery);
                     textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
                     executeTextualContentQuery = false;
                     currentSize = 0;
+                }
+                if(executeTextualContentQuery)
+                    textualContentQuery += ", ";
+                executeTextualContentQuery = true;
+
+                try {
+                    std::string fileContent = TextExtractor::GetFileContent(files[i]);
+                    textualContentQuery += "(" + txn.quote(correctId) + ", " + txn.quote(fileContent) + ") ";
+
+                } catch (const std::exception& e) {
+                    std::cerr << "Error processing file " << file.path << ": " << e.what() << "\n";
+                    continue;
                 }
             }
         }

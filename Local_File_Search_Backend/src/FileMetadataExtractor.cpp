@@ -71,7 +71,6 @@ std::string FileMetadataExtractor::getFileCreationTime(const std::wstring& fileP
 
     time_t time = (ull.QuadPart / WINDOWS_TICK) - SEC_TO_UNIX_EPOCH;
 
-    // Convert to localtime
     std::tm local_tm;
     localtime_s(&local_tm, &time);
 

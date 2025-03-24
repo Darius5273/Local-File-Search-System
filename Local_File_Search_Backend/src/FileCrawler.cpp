@@ -7,6 +7,11 @@
 namespace fs = std::filesystem;
 
 void FileCrawler::scanDirectory() {
+    if (!fs::is_directory(rootDirectory)) {
+        std::cerr << "Error: " << rootDirectory << " is not a valid directory\n";
+        return;
+    }
+
     indexer->startCrawlingTimer();
 
     for (auto it = fs::recursive_directory_iterator(rootDirectory); it != fs::recursive_directory_iterator(); ++it) {
@@ -41,7 +46,7 @@ void FileCrawler::scanDirectory() {
                 continue;
             }
 
-            else if (entry.path().filename().string().rfind("~$",0) == 0)
+            else if (fileName.rfind("~$",0) == 0)
             {
                 continue;
             }
