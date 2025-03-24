@@ -122,10 +122,14 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
         std::string sql;
 
         if (searchContent) {
-            sql = "SELECT f.path, ts_headline('simple', tc.content, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
-                  "FROM textual_content tc JOIN files f ON f.id = tc.file_id "
-                  "WHERE tc.content @@ plainto_tsquery($1 || ':*') "
-                  "LIMIT 3;";
+            sql = "SELECT f.path, ts_headline('simple', fc.content, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
+                  "FROM ("
+                  "SELECT file_id, content"
+                  "    FROM textual_content"
+                  "    WHERE to_tsvector('simple', content) @@ plainto_tsquery($1 || ':*')"
+                  "    LIMIT 3 "
+                  ") fc "
+                  "JOIN files f ON f.id = fc.file_id;";
         } else {
             sql = "SELECT f.path, substring(tc.content FROM '(^(\\S+\\s+){100}(\\S+))') AS preview "
                   "FROM files f JOIN textual_content tc ON f.id = tc.file_id "
