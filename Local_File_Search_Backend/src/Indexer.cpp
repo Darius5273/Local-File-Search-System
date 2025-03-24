@@ -26,6 +26,10 @@ void Indexer::finalizeIndexing() {
     generateReport();
 }
 
+void Indexer::setDirectoriesScannedToZero()
+{
+    totalDirectoriesScanned = 0;
+}
 
 void Indexer::startCrawlingTimer() {
     dbConnector->connect();
@@ -35,7 +39,7 @@ void Indexer::startCrawlingTimer() {
     totalFileSize = 0;
     maxFileSize = 0;
     minFileSize = LLONG_MAX;
-    totalDirectoriesScanned = -1;
+    totalDirectoriesScanned = 1;
     totalFilesProcessed = 0;
     totalDirectoriesIgnored = 0;
 
@@ -82,7 +86,7 @@ void Indexer::generateReport() {
     reportContent << "Total Files Indexed: " << filesIndexed << "\n";
     reportContent << "Total Files Ignored: " << filesIgnored << "\n";
     reportContent << "Total Files Processed: " << totalFilesProcessed << "\n";
-    reportContent << "Total Directories Scanned: " << ((totalDirectoriesScanned == -1) ? 0 : totalDirectoriesScanned + 2)<< "\n";
+    reportContent << "Total Directories Scanned: " << totalDirectoriesScanned<< "\n";
     reportContent << "Total Directories Ignored: " << totalDirectoriesIgnored << "\n";
     reportContent << "Average File Size: " << getAverageFileSize() << " bytes\n";
     reportContent<< "Maximum File Size: " << maxFileSize << " bytes\n";

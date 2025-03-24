@@ -32,6 +32,7 @@ public:
     void incrementIgnoredFiles();
     void incrementDirectoriesScanned();
     void incrementDirectoriesIgnored();
+    void setDirectoriesScannedToZero();
     double getAverageFileSize();
     double getTotalTimeInMilliseconds();
 };

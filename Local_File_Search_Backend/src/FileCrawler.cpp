@@ -9,6 +9,7 @@ namespace fs = std::filesystem;
 void FileCrawler::scanDirectory() {
     if (!fs::is_directory(rootDirectory)) {
         std::cerr << "Error: " << rootDirectory << " is not a valid directory\n";
+        indexer->setDirectoriesScannedToZero();
         return;
     }
 
