@@ -60,27 +60,16 @@ void FileCrawler::scanDirectory() {
     indexer->finalizeIndexing();
 }
 
-void print_unordered_set(const std::unordered_set<std::string>& set) {
-    for (const auto& element : set) {
-        std::cout << element << " ";
-    }
-    std::cout << std::endl;
-}
-
 void FileCrawler::setRootDirectory(const std::string& root){
     rootDirectory = root;
-    std::cout<<root<<std::endl;
 }
 void FileCrawler::setIgnoreDirectories(const std::unordered_set<std::string>& dirs){
     ignoreDirectories = dirs;
-    print_unordered_set(ignoreDirectories);
 }
 void FileCrawler::setIgnoreFiles(const std::unordered_set<std::string>& files){
     ignoreFiles = files;
-    print_unordered_set(ignoreFiles);
 }
 
 void FileCrawler::setIgnorePatterns(const std::unordered_set<std::string>& patterns){
     ignorePatterns = patterns;
-    print_unordered_set(ignorePatterns);
 }
