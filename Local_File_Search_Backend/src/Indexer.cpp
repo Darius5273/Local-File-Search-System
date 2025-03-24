@@ -4,8 +4,7 @@
 #include <fstream>
 #include <iostream>
 
-Indexer::Indexer(DatabaseConnector* db) : dbConnector(db), filesIgnored(0), filesIndexed(0),
-                                          totalFileSize(0), totalFilesIndexed(0) {}
+Indexer::Indexer(DatabaseConnector* db) : dbConnector(db) {}
 
 void Indexer::addFile(const FileData& file) {
     fileBatch.push_back(file);
@@ -30,10 +29,16 @@ void Indexer::finalizeIndexing() {
 
 void Indexer::startCrawlingTimer() {
     dbConnector->connect();
-    filesIgnored = 0;
     filesIndexed = 0;
+    filesIndexed = 0;
+    filesIgnored = 0;
     totalFileSize = 0;
-    totalFilesIndexed = 0;
+    maxFileSize = 0;
+    minFileSize = LLONG_MAX;
+    totalDirectoriesScanned = -1;
+    totalFilesProcessed = 0;
+    totalDirectoriesIgnored = 0;
+
     startTime = std::chrono::steady_clock::now();
 }
 
@@ -44,12 +49,23 @@ void Indexer::endCrawlingTimer() {
 
 void Indexer::incrementIndexedFiles(long long fileSize) {
     filesIndexed++;
+    totalFilesProcessed++;
     totalFileSize += fileSize;
+    if (fileSize > maxFileSize) maxFileSize = fileSize;
+    if (fileSize > 0 && fileSize < minFileSize) minFileSize = fileSize;
 }
 
 void Indexer::incrementIgnoredFiles() {
     filesIgnored++;
+    totalFilesProcessed++;
 }
+
+void Indexer::incrementDirectoriesScanned() {
+    totalDirectoriesScanned++; }
+
+void Indexer::incrementDirectoriesIgnored() {
+    totalDirectoriesIgnored++; }
+
 
 double Indexer::getAverageFileSize() {
     return (filesIndexed > 0) ? static_cast<double>(totalFileSize) / filesIndexed : 0;
@@ -65,7 +81,12 @@ void Indexer::generateReport() {
     reportContent << "Indexing Report\n\n";
     reportContent << "Total Files Indexed: " << filesIndexed << "\n";
     reportContent << "Total Files Ignored: " << filesIgnored << "\n";
+    reportContent << "Total Files Processed: " << totalFilesProcessed << "\n";
+    reportContent << "Total Directories Scanned: " << ((totalDirectoriesScanned == -1) ? 0 : totalDirectoriesScanned + 2)<< "\n";
+    reportContent << "Total Directories Ignored: " << totalDirectoriesIgnored << "\n";
     reportContent << "Average File Size: " << getAverageFileSize() << " bytes\n";
+    reportContent<< "Maximum File Size: " << maxFileSize << " bytes\n";
+    reportContent << "Minimum File Size: " << (minFileSize == LLONG_MAX ? 0 : minFileSize) << " bytes\n";
     reportContent << "Total Time Taken: " << getTotalTimeInMilliseconds() << " milliseconds\n";
 
     std::string report = reportContent.str();

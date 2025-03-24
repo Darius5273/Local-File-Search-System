@@ -5,12 +5,17 @@ private:
     DatabaseConnector* dbConnector;
     std::vector<FileData> fileBatch;
     int batchSize = 100;
-    int totalFilesIndexed;
+    int totalFilesIndexed = 0;
     std::vector<std::string> indexedFiles;
     std::string reportFilePath = "../../index_progress_report.txt";
-    int filesIndexed;
-    int filesIgnored;
-    long long totalFileSize;
+    int filesIndexed = 0;
+    int filesIgnored = 0;
+    long long totalFileSize = 0;
+    long long maxFileSize = 0;
+    long long minFileSize = LLONG_MAX;
+    int totalDirectoriesScanned = 0;
+    int totalFilesProcessed = 0;
+    int totalDirectoriesIgnored = 0;
     std::chrono::steady_clock::time_point startTime;
     std::chrono::steady_clock::time_point endTime;
 
@@ -25,6 +30,8 @@ public:
     void endCrawlingTimer();
     void incrementIndexedFiles(long long fileSize);
     void incrementIgnoredFiles();
+    void incrementDirectoriesScanned();
+    void incrementDirectoriesIgnored();
     double getAverageFileSize();
     double getTotalTimeInMilliseconds();
 };
