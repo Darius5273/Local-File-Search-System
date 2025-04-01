@@ -8,7 +8,7 @@
 
 class DatabaseConnector {
 private:
-    std::string connectionString = "host=localhost port=5432 dbname=local_files user=postgres password=tresspress79";
+    std::string connectionString;
     pqxx::connection* conn;
 
 public:

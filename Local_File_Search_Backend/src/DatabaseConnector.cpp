@@ -3,9 +3,16 @@
 #include "../include/TextExtractor.h"
 #include <iostream>
 #include <fstream>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 const long long CONTENT_BATCH_SIZE = 8 * 1024 * 1024;
 DatabaseConnector::DatabaseConnector()
-        : conn(nullptr) {}
+        : conn(nullptr) {
+    std::ifstream configFile("../../config.txt");
+    std::getline(configFile, connectionString);
+}
 
 DatabaseConnector::~DatabaseConnector() {
     disconnect();
