@@ -6,12 +6,19 @@
 #include <unordered_set>
 #include <sstream>
 #include <iomanip>
+#include <magic.h>
 #include "FileData.h"
 
 namespace fs = std::filesystem;
 
 class FileMetadataExtractor {
+private:
+    magic_t magicCookie;
 public:
+    FileMetadataExtractor();
+
+    ~FileMetadataExtractor();
+
     FileData extractMetadata(const fs::directory_entry &entry);
 
     std::string getMimeType(const std::string &extension);
