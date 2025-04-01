@@ -55,7 +55,7 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
             pathToIdMap[returnedPath] = returnedId;
         }
 
-        std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, created_at, modified_time) VALUES ";
+        std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, modified_time) VALUES ";
         std::string textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
         bool executeTextualContentQuery = false;
         long long sizeThreshold = 8 * 1024 * 1024;
@@ -68,7 +68,6 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
                               + std::to_string(file.size) + ", "
                               + txn.quote(file.extension) + ", "
                               + txn.quote(file.mime_type) + ", "
-                              + txn.quote(file.created_at) + ", "
                               + txn.quote(file.modified_time) + ")";
             if (i != files.size() - 1) {
                 metadataValues += ", ";
@@ -98,7 +97,7 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
             }
         }
         metadataQuery += metadataValues;
-        metadataQuery += " ON CONFLICT (id) DO UPDATE SET size = EXCLUDED.size, extension = EXCLUDED.extension, mime_type = EXCLUDED.mime_type, created_at = EXCLUDED.created_at, modified_time = EXCLUDED.modified_time;";
+        metadataQuery += " ON CONFLICT (id) DO UPDATE SET size = EXCLUDED.size, extension = EXCLUDED.extension, mime_type = EXCLUDED.mime_type, modified_time = EXCLUDED.modified_time;";
         textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
         txn.exec(metadataQuery);
 

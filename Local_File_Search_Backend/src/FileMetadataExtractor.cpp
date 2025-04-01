@@ -12,13 +12,12 @@ FileData FileMetadataExtractor::extractMetadata(const fs::directory_entry& entry
     long long size = fs::file_size(entry);
 
     std::string modified_time = getFormattedTime(fs::last_write_time(entry));
-    std::string created_at = getFileCreationTime(entry.path().wstring());
 
     bool is_text = mime_type.rfind("text", 0) == 0 ||
             mime_type.find("pdf") != std::string::npos ||
             mime_type.find("word") != std::string::npos;
 
-    return FileData(name, path, extension, mime_type, modified_time, created_at, size, is_text);
+    return FileData(name, path, extension, mime_type, modified_time, size, is_text);
 }
 
 std::string FileMetadataExtractor::getMimeType(const std::string& extension) {
@@ -39,45 +38,6 @@ std::string FileMetadataExtractor::getMimeType(const std::string& extension) {
     return "application/octet-stream";
 }
 
-std::string FileMetadataExtractor::getFileCreationTime(const std::wstring& filePath) {
-    HANDLE hFile = CreateFileW(
-            filePath.c_str(),
-            GENERIC_READ,
-            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-            nullptr,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
-            nullptr
-    );
-
-    if (hFile == INVALID_HANDLE_VALUE) {
-        return "Unavailable";
-    }
-
-    FILETIME ftCreate;
-    if (!GetFileTime(hFile, &ftCreate, nullptr, nullptr)) {
-        CloseHandle(hFile);
-        return "Unavailable";
-    }
-
-    CloseHandle(hFile);
-
-    ULARGE_INTEGER ull;
-    ull.LowPart = ftCreate.dwLowDateTime;
-    ull.HighPart = ftCreate.dwHighDateTime;
-
-    const uint64_t WINDOWS_TICK = 10000000ULL;
-    const uint64_t SEC_TO_UNIX_EPOCH = 11644473600ULL;
-
-    time_t time = (ull.QuadPart / WINDOWS_TICK) - SEC_TO_UNIX_EPOCH;
-
-    std::tm local_tm;
-    localtime_s(&local_tm, &time);
-
-    std::stringstream ss;
-    ss << std::put_time((&local_tm),"%Y-%m-%d %H:%M:%S");
-    return ss.str();
-}
 
 std::string FileMetadataExtractor::getFormattedTime(const fs::file_time_type& ftime) {
     auto sctp = std::chrono::time_point_cast<std::chrono::system_clock::duration>(

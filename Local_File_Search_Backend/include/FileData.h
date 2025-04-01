@@ -11,14 +11,12 @@ public:
     std::string extension;
     std::string mime_type;
     std::string modified_time;
-    std::string created_at;
     bool is_text;
     long long size;
 
     FileData(const std::string& name, const std::string& path,
                  const std::string& extension, const std::string& mime_type,
-                 const std::string& modified_time, const std::string& created_at,
-                 long long size, bool is_text);
+                 const std::string& modified_time, long long size, bool is_text);
 };
 
 #endif // FILE_DATA_H

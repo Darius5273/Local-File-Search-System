@@ -18,6 +18,5 @@ public:
 
     std::string getFormattedTime(const fs::file_time_type &ftime);
 
-    std::string getFileCreationTime(const std::wstring &filePath);
 };
 #endif // FILE_METADATA_EXTRACTOR_H
