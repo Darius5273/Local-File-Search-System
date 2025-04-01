@@ -1,0 +1,12 @@
+build/
+.idea/
+cmake-build-debug-visual-studio/
+index_progress_report.txt
+CMakeLists.txt
+
+.vscode/
+dist/
+node_modules/
+*.log
+.env
+public/
