@@ -13,12 +13,12 @@
 
 const size_t CHUNK_SIZE = 64 * 1024;
 const size_t MAX_SIZE = 0.88 * 1024 * 1024;
+const std::string tempOutput = "temp_output.txt";
 
 
 namespace fs = std::filesystem;
 
 std::string TextExtractor::ExtractTextFromPDF(const std::string& pdfPath) {
-    std::string tempOutput = "temp_output.txt";
 
     std::string command = "pdftotext \"" + pdfPath + "\" \"" + tempOutput + "\" 2>nul";
     int result = system(command.c_str());

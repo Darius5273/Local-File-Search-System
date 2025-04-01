@@ -7,7 +7,7 @@ private:
     int batchSize = 100;
     int totalFilesIndexed = 0;
     std::vector<std::string> indexedFiles;
-    std::string reportFilePath = "../../index_progress_report.txt";
+    const std::string reportFilePath = "../../index_progress_report.txt";
     int filesIndexed = 0;
     int filesIgnored = 0;
     long long totalFileSize = 0;

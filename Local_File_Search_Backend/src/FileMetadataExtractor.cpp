@@ -3,13 +3,14 @@
 #include "../include/Utf8Converter.h"
 #include <magic.h>
 
+
 FileMetadataExtractor::FileMetadataExtractor() {
     magicCookie = magic_open(MAGIC_MIME_TYPE);
     if (!magicCookie) {
         throw std::runtime_error("Failed to initialize libmagic");
     }
 
-    if (magic_load(magicCookie, "D:/vcpkg/installed/x64-windows/share/libmagic/misc/magic.mgc") != 0) {
+    if (magic_load(magicCookie, MAGIC_DATABASE_FILE_PATH) != 0) {
         magic_close(magicCookie);
         throw std::runtime_error("Failed to load magic database");
     }

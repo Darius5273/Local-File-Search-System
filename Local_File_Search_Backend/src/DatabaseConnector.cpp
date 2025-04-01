@@ -3,6 +3,7 @@
 #include "../include/TextExtractor.h"
 #include <iostream>
 #include <fstream>
+const long long CONTENT_BATCH_SIZE = 8 * 1024 * 1024;
 DatabaseConnector::DatabaseConnector()
         : conn(nullptr) {}
 
@@ -58,7 +59,6 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
         std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, modified_time) VALUES ";
         std::string textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
         bool executeTextualContentQuery = false;
-        long long sizeThreshold = 8 * 1024 * 1024;
         long long currentSize = 0;
         std::string metadataValues;
         for (size_t i = 0; i < files.size(); ++i) {
@@ -74,7 +74,7 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
             }
             if (file.is_text) {
                 currentSize += file.size;
-                if(sizeThreshold <= currentSize && executeTextualContentQuery)
+                if(CONTENT_BATCH_SIZE <= currentSize && executeTextualContentQuery)
                 {
                     textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
                     txn.exec(textualContentQuery);

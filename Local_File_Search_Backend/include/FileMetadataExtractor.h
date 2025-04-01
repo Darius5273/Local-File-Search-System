@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 
 class FileMetadataExtractor {
 private:
+    const char* MAGIC_DATABASE_FILE_PATH = "D:/vcpkg/installed/x64-windows/share/libmagic/misc/magic.mgc";
     magic_t magicCookie;
 public:
     FileMetadataExtractor();
