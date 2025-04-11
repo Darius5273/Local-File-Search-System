@@ -2,6 +2,7 @@
 #define IREPORTFORMATTER_H
 
 #include <string>
+#include <map>
 
 class IReportFormatter {
 public:
