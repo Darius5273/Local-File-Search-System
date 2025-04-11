@@ -1,5 +1,3 @@
-
-
 #include "../include/Indexer.h"
 #include <fstream>
 #include <iostream>
@@ -12,6 +10,10 @@ void Indexer::addFile(const FileData& file) {
     if (fileBatch.size() >= batchSize) {
         processBatch();
     }
+}
+
+void Indexer::setReportFormatter(std::unique_ptr<IReportFormatter> formatter) {
+    reportFormatter = std::move(formatter);
 }
 
 void Indexer::processBatch() {
@@ -79,27 +81,21 @@ double Indexer::getTotalTimeInMilliseconds() const {
     return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 }
 
-void Indexer::generateReport() {
-    std::ofstream reportFile(reportFilePath);
-    std::stringstream reportContent;
-    reportContent << "Indexing Report\n\n";
-    reportContent << "Total Files Indexed: " << filesIndexed << "\n";
-    reportContent << "Total Files Ignored: " << filesIgnored << "\n";
-    reportContent << "Total Files Processed: " << totalFilesProcessed << "\n";
-    reportContent << "Total Directories Scanned: " << totalDirectoriesScanned<< "\n";
-    reportContent << "Total Directories Ignored: " << totalDirectoriesIgnored << "\n";
-    reportContent << "Average File Size: " << getAverageFileSize() << " bytes\n";
-    reportContent<< "Maximum File Size: " << maxFileSize << " bytes\n";
-    reportContent << "Minimum File Size: " << (minFileSize == LLONG_MAX ? 0 : minFileSize) << " bytes\n";
-    reportContent << "Total Time Taken: " << getTotalTimeInMilliseconds() << " milliseconds\n";
 
-    std::string report = reportContent.str();
-    if (reportFile.is_open()) {
-        reportFile << report;
-        reportFile.close();
-    } else {
-        std::cerr << "Error: Unable to write report to " << reportFilePath << std::endl;
-    }
+void Indexer::generateReport() {
+    std::map<std::string, std::string> reportData;
+
+    reportData["Total Files Indexed"] = std::to_string(getFilesIndexed());
+    reportData["Total Files Ignored"] = std::to_string(getFilesIgnored());
+    reportData["Total Files Processed"] = std::to_string(getTotalFilesProcessed());
+    reportData["Total Directories Scanned"] = std::to_string(getTotalDirectoriesScanned());
+    reportData["Total Directories Ignored"] = std::to_string(getTotalDirectoriesIgnored());
+    reportData["Average File Size"] = std::to_string(getAverageFileSize()) + " bytes";
+    reportData["Maximum File Size"] = std::to_string(getMaxFileSize()) + " bytes";
+    reportData["Minimum File Size"] = std::to_string(minFileSize == LLONG_MAX ? 0 : minFileSize) + " bytes";
+    reportData["Total Time Taken"] = std::to_string(getTotalTimeInMilliseconds()) + " milliseconds";
+
+    reportFormatter->formatAndSave(reportData);
 }
 
 int Indexer::getFilesIndexed() const {
@@ -129,3 +125,4 @@ int Indexer::getTotalFilesProcessed() const {
 int Indexer::getTotalDirectoriesIgnored() const {
     return totalDirectoriesIgnored;
 }
+

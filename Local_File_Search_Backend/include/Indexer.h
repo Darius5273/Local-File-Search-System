@@ -1,4 +1,5 @@
 #include "DatabaseConnector.h"
+#include "IReportFormatter.h"
 
 class Indexer {
 private:
@@ -7,7 +8,7 @@ private:
     int batchSize = 100;
     int totalFilesIndexed = 0;
     std::vector<std::string> indexedFiles;
-    const std::string reportFilePath = "../../index_progress_report.txt";
+    std::unique_ptr<IReportFormatter> reportFormatter;
     int filesIndexed = 0;
     int filesIgnored = 0;
     long long totalFileSize = 0;
@@ -22,6 +23,7 @@ private:
 public:
     Indexer(DatabaseConnector* db);
 
+    void setReportFormatter(std::unique_ptr<IReportFormatter> formatter);
     void addFile(const FileData& file);
     void processBatch();
     void finalizeIndexing();
@@ -42,4 +44,5 @@ public:
     int getTotalDirectoriesScanned() const;
     int getTotalFilesProcessed() const;
     int getTotalDirectoriesIgnored() const;
+
 };

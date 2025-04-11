@@ -2,13 +2,12 @@
 #define IREPORTFORMATTER_H
 
 #include <string>
-#include "Indexer.h"
 
 class IReportFormatter {
 public:
     virtual ~IReportFormatter() = default;
 
-    virtual void formatAndSave(const Indexer& indexer) const = 0;
+    virtual void formatAndSave(const std::map<std::string, std::string>& reportData) const = 0;
 };
 
 #endif // IREPORTFORMATTER_H
