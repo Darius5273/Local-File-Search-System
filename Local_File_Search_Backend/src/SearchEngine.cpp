@@ -7,8 +7,10 @@ void SearchEngine::setSearchContent(bool flag) {
     searchContent = flag;
 }
 
-void SearchEngine::search(const std::string& searchTerm) {
-    std::vector<SearchResult> results = db->query(searchTerm, searchContent);
+void SearchEngine::search(const std::string& searchQuery) {
+    queryParser.parse(searchQuery);
+    auto parsedQuery= queryParser.getParsedQuery();
+    std::vector<SearchResult> results = db->query(parsedQuery);
     std::cout << "Search Results:\n";
     for (const auto& result : results) {
         std::cout << "Path: " << result.path << "\n";

@@ -5,10 +5,12 @@
 #include <vector>
 #include <iostream>
 #include "DatabaseConnector.h"
+#include "QueryParser.h"
 
 class SearchEngine {
 private:
     DatabaseConnector* db;
+    QueryParser queryParser;
     bool searchContent;
 
 public:
