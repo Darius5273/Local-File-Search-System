@@ -71,11 +71,11 @@ void Indexer::incrementDirectoriesIgnored() {
     totalDirectoriesIgnored++; }
 
 
-double Indexer::getAverageFileSize() {
+double Indexer::getAverageFileSize() const  {
     return (filesIndexed > 0) ? static_cast<double>(totalFileSize) / filesIndexed : 0;
 }
 
-double Indexer::getTotalTimeInMilliseconds() {
+double Indexer::getTotalTimeInMilliseconds() const {
     return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 }
 
@@ -100,4 +100,32 @@ void Indexer::generateReport() {
     } else {
         std::cerr << "Error: Unable to write report to " << reportFilePath << std::endl;
     }
+}
+
+int Indexer::getFilesIndexed() const {
+    return filesIndexed;
+}
+
+int Indexer::getFilesIgnored() const {
+    return filesIgnored;
+}
+
+long long int Indexer::getMaxFileSize() const {
+    return maxFileSize;
+}
+
+long long int Indexer::getMinFileSize() const {
+    return minFileSize;
+}
+
+int Indexer::getTotalDirectoriesScanned() const {
+    return totalDirectoriesScanned;
+}
+
+int Indexer::getTotalFilesProcessed() const {
+    return totalFilesProcessed;
+}
+
+int Indexer::getTotalDirectoriesIgnored() const {
+    return totalDirectoriesIgnored;
 }

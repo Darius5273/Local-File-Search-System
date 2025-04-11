@@ -33,6 +33,13 @@ public:
     void incrementDirectoriesScanned();
     void incrementDirectoriesIgnored();
     void setDirectoriesScannedToZero();
-    double getAverageFileSize();
-    double getTotalTimeInMilliseconds();
+    double getAverageFileSize() const;
+    double getTotalTimeInMilliseconds() const;
+    int getFilesIndexed() const;
+    int getFilesIgnored() const;
+    long long int getMaxFileSize() const;
+    long long int getMinFileSize() const;
+    int getTotalDirectoriesScanned() const;
+    int getTotalFilesProcessed() const;
+    int getTotalDirectoriesIgnored() const;
 };
