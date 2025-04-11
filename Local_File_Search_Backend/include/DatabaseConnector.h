@@ -19,6 +19,9 @@ public:
     void disconnect();
     void insertBatch(const std::vector<FileData>& files);
     std::vector<SearchResult>query(const std::string& searchTerm, bool searchContent);
+    std::vector<SearchResult> query(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery);
+    std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::string>& pathTerms);
+    std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<std::string>& contentTerms);
 
 };
 

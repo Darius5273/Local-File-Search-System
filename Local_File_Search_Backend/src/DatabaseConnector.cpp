@@ -119,6 +119,89 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
     }
 }
 
+std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::string>& pathTerms) {
+    std::vector<SearchResult> results;
+    if (pathTerms.empty()) return results;
+
+    try {
+        pqxx::work txn(*conn);
+        std::string sql = R"SQL(
+            SELECT
+                f.path, f.score,
+                substring(tc.content FROM '(^(\\S+\\s+){100}(\\S+))') AS preview
+            FROM files f
+            JOIN textual_content tc ON f.id = tc.file_id
+            WHERE
+        )SQL";
+
+        std::vector<std::string> params;
+        for (size_t i = 0; i < pathTerms.size(); ++i) {
+            if (i > 0) sql += " AND ";
+            sql += "LOWER(f.path) ILIKE LOWER($" + std::to_string(i + 1) + ")";
+            params.push_back("%" + pathTerms[i] + "%");
+        }
+
+        sql += " ORDER BY f.score DESC LIMIT 3;";
+
+        pqxx::result res = txn.exec_params(sql, params);
+
+        for (const auto& row : res) {
+            std::string path = row["path"].c_str();
+            std::string preview = row["preview"].c_str();
+            results.emplace_back(path, preview);
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "QueryByPath error: " << e.what() << std::endl;
+    }
+
+    return results;
+}
+
+std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<std::string>& contentTerms) {
+    std::vector<SearchResult> results;
+    if (contentTerms.empty()) return results;
+
+    try {
+        pqxx::work txn(*conn);
+
+        std::string tsqueryStr;
+        for (const auto& term : contentTerms) {
+            if (!tsqueryStr.empty()) tsqueryStr += " & ";
+            tsqueryStr += term + ":*";
+        }
+
+        std::string sql = R"SQL(
+            SELECT
+                f.path, f.score,
+                ts_headline('simple', tc.content, query, 'MaxFragments=1, MaxWords=100') AS preview
+            FROM (
+                SELECT
+                    file_id,
+                    content,
+                    to_tsquery('simple', $1) AS query
+                FROM textual_content
+                WHERE to_tsvector('simple', content) @@ to_tsquery('simple', $1)
+            ) tc
+            JOIN files f ON f.id = tc.file_id
+            ORDER BY f.score DESC
+            LIMIT 3;
+        )SQL";
+
+        pqxx::result res = txn.exec_params(sql, tsqueryStr);
+
+        for (const auto& row : res) {
+            std::string path = row["path"].c_str();
+            std::string preview = row["preview"].c_str();
+            results.emplace_back(path, preview);
+        }
+
+    } catch (const std::exception& e) {
+        std::cerr << "QueryByContent error: " << e.what() << std::endl;
+    }
+
+    return results;
+}
 
 
 std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm, bool searchContent) {
@@ -126,7 +209,7 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
     try {
         pqxx::work txn(*conn);
         std::string sql;
-
+        //std::cout<<"*"<<std::endl;
         if (searchContent) {
             sql = "SELECT f.path, ts_headline('simple', fc.content, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
                   "FROM ("
@@ -150,6 +233,78 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
             std::string preview = row["preview"].c_str();
             results.emplace_back(path, preview);
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Query error: " << e.what() << std::endl;
+    }
+
+    return results;
+}
+
+std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
+    std::vector<SearchResult> results;
+
+    try {
+        pqxx::work txn(*conn);
+
+        std::vector<std::string> contentTerms;
+        std::vector<std::string> pathTerms;
+
+        if (parsedQuery.count("content"))
+            contentTerms = parsedQuery.at("content");
+        if (parsedQuery.count("path"))
+            pathTerms = parsedQuery.at("path");
+
+        if (contentTerms.empty()) {
+            return queryByPath(pathTerms);
+        }
+        if (pathTerms.empty()) {
+            return queryByContent(contentTerms);
+        }
+
+        std::string sql;
+        std::vector<std::string> params;
+
+        std::string tsqueryStr;
+        if (!contentTerms.empty()) {
+            for (const auto& term : contentTerms) {
+                if (!tsqueryStr.empty()) tsqueryStr += " & ";
+                tsqueryStr += term + ":*";
+            }
+        }
+
+        sql += "SQL("
+               "SELECT "
+               "f.path, f.score, ts_headline('simple', tc.content, query, 'MaxFragments=1, MaxWords=100') AS preview "
+               "FROM ( "
+               "SELECT file_id, content, to_tsquery('simple', $1) AS query "
+               "FROM textual_content "
+               "WHERE to_tsvector('simple', content) @@ to_tsquery('simple', $1) "
+               ") tc "
+               "JOIN files f ON f.id = tc.file_id)";
+
+        params.push_back(tsqueryStr);
+        int paramIndex = 2;
+
+        if (!pathTerms.empty()) {
+            sql += " WHERE ";
+            for (size_t i = 0; i < pathTerms.size(); ++i) {
+                if (i > 0) sql += " AND ";
+                sql += "LOWER(f.path) ILIKE LOWER($" + std::to_string(paramIndex) + ")";
+                params.push_back("%" + pathTerms[i] + "%");
+                paramIndex++;
+            }
+        }
+
+        sql += " ORDER BY f.score DESC LIMIT 3;";
+
+        pqxx::result res = txn.exec_params(sql, params);
+
+        for (const auto& row : res) {
+            std::string path = row["path"].c_str();
+            std::string preview = row["preview"].c_str();
+            results.emplace_back(path, preview);
+        }
+
     } catch (const std::exception& e) {
         std::cerr << "Query error: " << e.what() << std::endl;
     }
