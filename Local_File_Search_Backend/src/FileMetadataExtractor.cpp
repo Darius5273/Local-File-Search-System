@@ -34,9 +34,11 @@ FileData FileMetadataExtractor::extractMetadata(const fs::directory_entry& entry
             mime_type.find("pdf") != std::string::npos ||
             mime_type.find("word") != std::string::npos;
 
+    bool is_image = mime_type.rfind("image", 0) == 0;
+
     double score = indexScorer.scoreFile(path, extension, mime_type, modified_time, size, is_text);
 
-    return FileData(name, path, extension, mime_type, modified_time, size, is_text, score);
+    return FileData(name, path, extension, mime_type, modified_time, size, is_text, score, is_image);
 }
 
 std::string FileMetadataExtractor::getMimeType(const std::string& filePath) {

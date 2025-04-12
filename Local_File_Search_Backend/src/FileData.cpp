@@ -7,9 +7,10 @@
 FileData::FileData(const std::string& name, const std::string& path,
                            const std::string& extension, const std::string& mime_type,
                            const std::string& modified_time, long long size, bool is_text,
-                           double score)
+                           double score, bool is_image)
         : name(name), path(path), extension(extension), mime_type(mime_type),
-          modified_time(modified_time), size(size), is_text(is_text), score(score) {
+          modified_time(modified_time), size(size), is_text(is_text), score(score),
+          is_image(is_image) {
 
     UUID uuid;
     UuidCreate(&uuid);
