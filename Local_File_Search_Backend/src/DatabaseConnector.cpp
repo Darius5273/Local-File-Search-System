@@ -141,7 +141,7 @@ std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::
             params.push_back("%" + pathTerms[i] + "%");
         }
 
-        sql += " ORDER BY f.score DESC LIMIT 3;";
+        sql += " ORDER BY f.score DESC LIMIT 100;";
 
         pqxx::result res = txn.exec_params(sql, pqxx::prepare::make_dynamic_params(params));
 
@@ -186,7 +186,7 @@ std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<st
             ) tc
             JOIN files f ON f.id = tc.file_id
             ORDER BY f.score DESC
-            LIMIT 3;
+            LIMIT 100;
         )SQL";
 
         pqxx::result res = txn.exec_params(sql, tsqueryStr);
@@ -224,7 +224,7 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
             sql = "SELECT f.path, f.score, substring(tc.content FROM 1 FOR 100) AS preview "
                   "FROM files f JOIN textual_content tc ON f.id = tc.file_id "
                   "WHERE LOWER(name) LIKE LOWER('%' || $1 || '%') "
-                  "LIMIT 3;";
+                  "LIMIT 100;";
         }
 
         pqxx::result res = txn.exec_params(sql, searchTerm);
@@ -296,7 +296,7 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
             }
         }
 
-        sql += " ORDER BY f.score DESC LIMIT 3;";
+        sql += " ORDER BY f.score DESC LIMIT 100;";
 
         pqxx::result res = txn.exec_params(sql, pqxx::prepare::make_dynamic_params(params));
 
