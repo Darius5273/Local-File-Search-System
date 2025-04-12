@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <set>
 
 class QueryParser {
 public:
@@ -12,6 +13,8 @@ public:
 
 private:
     std::unordered_map<std::string, std::vector<std::string>> parsedQuery;
+    const std::set<std::string> validQualifiers = {"color", "path", "content"};
+
 
     void reset();
     void addQualifierValue(const std::string& qualifier, const std::string& value);
