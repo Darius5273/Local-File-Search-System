@@ -25,7 +25,7 @@ FileData FileMetadataExtractor::extractMetadata(const fs::directory_entry& entry
     std::string name = Utf8Converter::WideToUtf8(entry.path().filename().wstring());
     std::string path = Utf8Converter::WideToUtf8(entry.path().wstring());
     std::string extension = entry.path().extension().string();
-    std::string mime_type = getMimeType(entry.path().string());
+    std::string mime_type = getMimeType(Utf8Converter::WideToUtf8(entry.path().wstring()));
     long long size = fs::file_size(entry);
 
     std::string modified_time = getFormattedTime(fs::last_write_time(entry));
@@ -34,7 +34,9 @@ FileData FileMetadataExtractor::extractMetadata(const fs::directory_entry& entry
             mime_type.find("pdf") != std::string::npos ||
             mime_type.find("word") != std::string::npos;
 
-    return FileData(name, path, extension, mime_type, modified_time, size, is_text);
+    double score = indexScorer.scoreFile(path, extension, mime_type, modified_time, size, is_text);
+
+    return FileData(name, path, extension, mime_type, modified_time, size, is_text, score);
 }
 
 std::string FileMetadataExtractor::getMimeType(const std::string& filePath) {

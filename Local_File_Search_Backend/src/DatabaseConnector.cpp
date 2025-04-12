@@ -40,19 +40,20 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
     try {
         pqxx::work txn(*conn);
 
-        std::string filesQuery = "INSERT INTO files (id, name, path) VALUES ";
+        std::string filesQuery = "INSERT INTO files (id, name, path, score) VALUES ";
         std::string filesValues;
         for (size_t i = 0; i < files.size(); ++i) {
             const auto& file = files[i];
             filesValues += "(" + txn.quote(file.id) + ", "
                            + txn.quote(file.name) + ", "
-                           + txn.quote(file.path) + ")";
+                           + txn.quote(file.path) + ", "
+                           + txn.quote(file.score) + ")";
             if (i != files.size() - 1) {
                 filesValues += ", ";
             }
         }
         filesQuery += filesValues;
-        filesQuery += " ON CONFLICT (path) DO UPDATE SET name = EXCLUDED.name RETURNING id, path;";
+        filesQuery += " ON CONFLICT (path) DO UPDATE SET name = EXCLUDED.name, score = EXCLUDED.score RETURNING id, path;";
 
         std::unordered_map<std::string, std::string> pathToIdMap;
 
@@ -121,14 +122,13 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
 
 std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::string>& pathTerms) {
     std::vector<SearchResult> results;
-    if (pathTerms.empty()) return results;
 
     try {
         pqxx::work txn(*conn);
         std::string sql = R"SQL(
             SELECT
                 f.path, f.score,
-                substring(tc.content FROM '(^(\\S+\\s+){100}(\\S+))') AS preview
+                substring(tc.content FROM 1 FOR 100) AS preview
             FROM files f
             JOIN textual_content tc ON f.id = tc.file_id
             WHERE
@@ -143,12 +143,13 @@ std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::
 
         sql += " ORDER BY f.score DESC LIMIT 3;";
 
-        pqxx::result res = txn.exec_params(sql, params);
+        pqxx::result res = txn.exec_params(sql, pqxx::prepare::make_dynamic_params(params));
 
         for (const auto& row : res) {
             std::string path = row["path"].c_str();
             std::string preview = row["preview"].c_str();
-            results.emplace_back(path, preview);
+            double score = row["score"].as<double>();
+            results.emplace_back(path, score, preview);
         }
 
     } catch (const std::exception& e) {
@@ -193,7 +194,8 @@ std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<st
         for (const auto& row : res) {
             std::string path = row["path"].c_str();
             std::string preview = row["preview"].c_str();
-            results.emplace_back(path, preview);
+            double score = row["score"].as<double>();
+            results.emplace_back(path, score, preview);
         }
 
     } catch (const std::exception& e) {
@@ -209,9 +211,8 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
     try {
         pqxx::work txn(*conn);
         std::string sql;
-        //std::cout<<"*"<<std::endl;
         if (searchContent) {
-            sql = "SELECT f.path, ts_headline('simple', fc.content, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
+            sql = "SELECT f.path, f.score, ts_headline('simple', fc.content, plainto_tsquery($1), 'MaxFragments=1, MaxWords=100') AS preview "
                   "FROM ("
                   "SELECT file_id, content"
                   "    FROM textual_content"
@@ -220,7 +221,7 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
                   ") fc "
                   "JOIN files f ON f.id = fc.file_id;";
         } else {
-            sql = "SELECT f.path, substring(tc.content FROM '(^(\\S+\\s+){100}(\\S+))') AS preview "
+            sql = "SELECT f.path, f.score, substring(tc.content FROM 1 FOR 100) AS preview "
                   "FROM files f JOIN textual_content tc ON f.id = tc.file_id "
                   "WHERE LOWER(name) LIKE LOWER('%' || $1 || '%') "
                   "LIMIT 3;";
@@ -231,7 +232,8 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
         for (auto row : res) {
             std::string path = row["path"].c_str();
             std::string preview = row["preview"].c_str();
-            results.emplace_back(path, preview);
+            double score = row["score"].as<double>();
+            results.emplace_back(path, score, preview);
         }
     } catch (const std::exception& e) {
         std::cerr << "Query error: " << e.what() << std::endl;
@@ -242,9 +244,7 @@ std::vector<SearchResult> DatabaseConnector::query(const std::string& searchTerm
 
 std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
     std::vector<SearchResult> results;
-
     try {
-        pqxx::work txn(*conn);
 
         std::vector<std::string> contentTerms;
         std::vector<std::string> pathTerms;
@@ -261,6 +261,8 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
             return queryByContent(contentTerms);
         }
 
+        pqxx::work txn(*conn);
+
         std::string sql;
         std::vector<std::string> params;
 
@@ -272,15 +274,14 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
             }
         }
 
-        sql += "SQL("
-               "SELECT "
+        sql += "SELECT "
                "f.path, f.score, ts_headline('simple', tc.content, query, 'MaxFragments=1, MaxWords=100') AS preview "
                "FROM ( "
                "SELECT file_id, content, to_tsquery('simple', $1) AS query "
                "FROM textual_content "
                "WHERE to_tsvector('simple', content) @@ to_tsquery('simple', $1) "
                ") tc "
-               "JOIN files f ON f.id = tc.file_id)";
+               "JOIN files f ON f.id = tc.file_id";
 
         params.push_back(tsqueryStr);
         int paramIndex = 2;
@@ -297,12 +298,13 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
 
         sql += " ORDER BY f.score DESC LIMIT 3;";
 
-        pqxx::result res = txn.exec_params(sql, params);
+        pqxx::result res = txn.exec_params(sql, pqxx::prepare::make_dynamic_params(params));
 
         for (const auto& row : res) {
             std::string path = row["path"].c_str();
             std::string preview = row["preview"].c_str();
-            results.emplace_back(path, preview);
+            double score = row["score"].as<double>();
+            results.emplace_back(path, score, preview);
         }
 
     } catch (const std::exception& e) {

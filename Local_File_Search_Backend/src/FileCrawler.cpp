@@ -52,9 +52,9 @@ void FileCrawler::scanDirectory() {
                 continue;
             }
 
-            FileData metadata = fileMetadataExtractor.extractMetadata(entry);
-            indexer->addFile(metadata);
-            indexer->incrementIndexedFiles(metadata.size);
+            FileData fileData = fileMetadataExtractor.extractMetadata(entry);
+            indexer->addFile(fileData);
+            indexer->incrementIndexedFiles(fileData.size);
         }
     }
     indexer->finalizeIndexing();
