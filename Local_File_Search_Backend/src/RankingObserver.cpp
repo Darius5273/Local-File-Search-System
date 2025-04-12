@@ -14,6 +14,8 @@ struct CompareSearchResultByScore {
 
 void RankingObserver::update(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
     auto results = db->query(parsedQuery);
+    if (results.empty())
+        return;
     for (auto& result : results) {
         double score = rankingMap[result.getPath()].score;
         double newResult = result.getScore() + score;
