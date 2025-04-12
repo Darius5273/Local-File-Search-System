@@ -6,11 +6,17 @@
 #include <iostream>
 #include "DatabaseConnector.h"
 #include "QueryParser.h"
+#include "ObserverContext.h"
+#include "../include/SuggestionObserver.h"
+#include "../include/RankingObserver.h"
 
 class SearchEngine {
 private:
     DatabaseConnector* db;
     QueryParser queryParser;
+    ObserverContext observerContext;
+    SuggestionObserver* suggestionObserver;
+    RankingObserver* rankingObserver;
     bool searchContent;
 
 public:

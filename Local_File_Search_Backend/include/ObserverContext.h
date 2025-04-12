@@ -12,6 +12,7 @@ public:
     void attach(IObserver* observer);
     void detach(IObserver* observer);
     void notify();
+    void setParsedQuery(std::unordered_map<std::string, std::vector<std::string>> parsedQuery);
 
 private:
     std::vector<IObserver*> observers;

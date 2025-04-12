@@ -14,3 +14,8 @@ void ObserverContext::notify() {
         observer->update(parsedQuery);
     }
 }
+
+void ObserverContext::setParsedQuery(std::unordered_map<std::string, std::vector<std::string>> parsedQuery){
+    ObserverContext::parsedQuery = parsedQuery;
+    notify();
+}
