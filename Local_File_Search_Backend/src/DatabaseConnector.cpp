@@ -1,6 +1,7 @@
 #include "../include/DatabaseConnector.h"
 #include "../include/Utf8Converter.h"
 #include "../include/TextExtractor.h"
+#include "../include/ImageColorExtractor.h"
 #include <iostream>
 #include <fstream>
 #include <iostream>
@@ -66,7 +67,10 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
 
         std::string metadataQuery = "INSERT INTO metadata (id, size, extension, mime_type, modified_time) VALUES ";
         std::string textualContentQuery = "INSERT INTO textual_content (file_id, content) VALUES ";
+        std::string imagesQuery = "INSERT INTO images (id, dominant_color) VALUES ";
+
         bool executeTextualContentQuery = false;
+        bool executeImageQuery = false;
         long long currentSize = 0;
         std::string metadataValues;
         for (size_t i = 0; i < files.size(); ++i) {
@@ -103,11 +107,23 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
                     continue;
                 }
             }
+            if (file.is_image) {
+                if (executeImageQuery)
+                    imagesQuery += ", ";
+                executeImageQuery = true;
+                std::string dominantColor = ImageColorExtractor::GetDominantColor(files[i].path);
+                imagesQuery += "(" + txn.quote(correctId) + ", " + txn.quote(dominantColor) + ") ";
+
+            }
+
         }
         metadataQuery += metadataValues;
         metadataQuery += " ON CONFLICT (id) DO UPDATE SET size = EXCLUDED.size, extension = EXCLUDED.extension, mime_type = EXCLUDED.mime_type, modified_time = EXCLUDED.modified_time;";
         textualContentQuery += "ON CONFLICT (file_id) DO UPDATE SET content = EXCLUDED.content;";
+        imagesQuery += "ON CONFLICT (id) DO UPDATE SET dominant_color = EXCLUDED.dominant_color;";
         txn.exec(metadataQuery);
+        if (executeImageQuery)
+            txn.exec(imagesQuery);
 
         if (executeTextualContentQuery) {
             txn.exec(textualContentQuery);
@@ -120,25 +136,45 @@ void DatabaseConnector::insertBatch(const std::vector<FileData>& files) {
     }
 }
 
-std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::string>& pathTerms) {
+std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vector<std::string>& pathTerms, const std::string& color) {
     std::vector<SearchResult> results;
 
     try {
+        std::string sql;
         pqxx::work txn(*conn);
-        std::string sql = R"SQL(
-            SELECT
-                f.path, f.score,
-                substring(tc.content FROM 1 FOR 100) AS preview
-            FROM files f
-            JOIN textual_content tc ON f.id = tc.file_id
-            WHERE
-        )SQL";
+        if (color.empty()) {
+            sql = R"SQL(
+                SELECT
+                    f.path, f.score,
+                    substring(tc.content FROM 1 FOR 100) AS preview
+                FROM files f
+                JOIN textual_content tc ON f.id = tc.file_id
+                JOIN images i ON i.id = f.id
+                WHERE
+            )SQL";
+        }
+        else {
+            sql = R"SQL(
+                SELECT
+                    f.path, f.score
+                FROM files f
+                JOIN images i ON f.id = i.id
+                WHERE
+            )SQL";
+        }
 
         std::vector<std::string> params;
-        for (size_t i = 0; i < pathTerms.size(); ++i) {
+        size_t i;
+        for (i = 0; i < pathTerms.size(); ++i) {
             if (i > 0) sql += " AND ";
             sql += "LOWER(f.path) ILIKE LOWER($" + std::to_string(i + 1) + ")";
             params.push_back("%" + pathTerms[i] + "%");
+        }
+
+        if (!color.empty()) {
+            if (i > 0) sql +=" AND ";
+            sql += "dominant_color LIKE LOWER($" + std::to_string(i + 1) + ")";
+            params.push_back(color);
         }
 
         sql += " ORDER BY f.score DESC LIMIT 100;";
@@ -147,7 +183,13 @@ std::vector<SearchResult> DatabaseConnector::queryByPath(const std::vector<std::
 
         for (const auto& row : res) {
             std::string path = row["path"].c_str();
-            std::string preview = row["preview"].c_str();
+            std::string preview;
+            try {
+                preview = row["preview"].c_str();
+            }
+            catch (const std::exception &e) {
+                preview = "";
+            }
             double score = row["score"].as<double>();
             results.emplace_back(path, score, preview);
         }
@@ -248,14 +290,16 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
 
         std::vector<std::string> contentTerms;
         std::vector<std::string> pathTerms;
-
+        std::string color;
         if (parsedQuery.count("content"))
             contentTerms = parsedQuery.at("content");
         if (parsedQuery.count("path"))
             pathTerms = parsedQuery.at("path");
+        if (parsedQuery.count("color"))
+            color = parsedQuery.at("color")[0];
 
         if (contentTerms.empty()) {
-            return queryByPath(pathTerms);
+            return queryByPathAndColor(pathTerms, color);
         }
         if (pathTerms.empty()) {
             return queryByContent(contentTerms);
