@@ -12,7 +12,7 @@ private:
     pqxx::connection* conn;
 
 public:
-    DatabaseConnector();
+    DatabaseConnector(const std::string& configurationFile);
     ~DatabaseConnector();
 
     void connect();
@@ -22,6 +22,8 @@ public:
     std::vector<SearchResult> query(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery);
     std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vector<std::string>& pathTerms, const std::string& color);
     std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<std::string>& contentTerms);
+
+    pqxx::connection *getConn() const;
 
 };
 

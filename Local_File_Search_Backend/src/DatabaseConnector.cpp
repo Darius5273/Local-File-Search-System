@@ -9,9 +9,9 @@
 #include <string>
 #include <sstream>
 const long long CONTENT_BATCH_SIZE = 8 * 1024 * 1024;
-DatabaseConnector::DatabaseConnector()
+DatabaseConnector::DatabaseConnector(const std::string& configurationFile)
         : conn(nullptr) {
-    std::ifstream configFile("../../config.txt");
+    std::ifstream configFile(configurationFile);
     std::getline(configFile, connectionString);
 }
 
@@ -145,11 +145,11 @@ std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vect
         if (color.empty()) {
             sql = R"SQL(
                 SELECT
-                    f.path, f.score,
+                    f.path, f.score, m.mime_type,
                     substring(tc.content FROM 1 FOR 100) AS preview
                 FROM files f
-                JOIN textual_content tc ON f.id = tc.file_id
-                JOIN images i ON i.id = f.id
+                LEFT JOIN textual_content tc ON f.id = tc.file_id
+                JOIN metadata m ON m.id = f.id
                 WHERE
             )SQL";
         }
@@ -191,11 +191,19 @@ std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vect
                 preview = "";
             }
             double score = row["score"].as<double>();
-            results.emplace_back(path, score, preview);
+            bool is_image;
+            try {
+                std::string mimeType = row["mime_type"].c_str();
+                is_image = mimeType.rfind("image",0) == 0;
+            }
+            catch (const std::exception &e) {
+                is_image = true;
+            }
+            results.emplace_back(path, score, preview, is_image);
         }
 
     } catch (const std::exception& e) {
-        std::cerr << "QueryByPath error: " << e.what() << std::endl;
+        std::cerr << "QueryByPathAndColor error: " << e.what() << std::endl;
     }
 
     return results;
@@ -356,4 +364,8 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
     }
 
     return results;
+}
+
+pqxx::connection *DatabaseConnector::getConn() const {
+    return conn;
 }
