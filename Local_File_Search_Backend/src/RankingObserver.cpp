@@ -12,10 +12,12 @@ struct CompareSearchResultByScore {
     }
 };
 
-void RankingObserver::update(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
+const std::vector<SearchResult> RankingObserver::getRankingResults(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
     auto results = db->query(parsedQuery);
-    if (results.empty())
-        return;
+    if (results.empty()) {
+        rankingResults.clear();
+        return rankingResults;
+    }
     for (auto& result : results) {
         double score = rankingMap[result.getPath()].score;
         double newResult = result.getScore() + score;
@@ -31,21 +33,16 @@ void RankingObserver::update(const std::unordered_map<std::string, std::vector<s
     }
     std::vector<std::string> historyEntry;
     rankingResults.clear();
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3 && !minHeap.empty(); ++i) {
         auto result = minHeap.top();
         std::string path = result.getPath();
         minHeap.pop();
         rankingResults.push_back(result);
-        auto &info = rankingMap[path];
-        if (i == 0) info.third++;
-        else if (i == 1) info.second++;
-        else if (i == 2) info.first++;
-
-        info.score = (1.0 * info.first + 0.5 * info.second + 0.2 * info.third) / 100.0;
         historyEntry.push_back(path);
     }
     recentHistory.push_back(historyEntry);
-    maintainRecentResults();
+    std::reverse(rankingResults.begin(), rankingResults.end());
+    return rankingResults;
 }
 
 void RankingObserver::maintainRecentResults() {
@@ -68,6 +65,18 @@ void RankingObserver::maintainRecentResults() {
     }
 }
 
-const std::vector<SearchResult> &RankingObserver::getRankingResults() const {
-    return rankingResults;
+void RankingObserver::update()  {
+    if (recentHistory.empty()) return;
+    auto lastResults = recentHistory.back();
+    for (int i = 0; i < lastResults.size(); i++)
+    {
+        auto &info = rankingMap[lastResults[i]];
+        if (i == 0) info.third++;
+        else if (i == 1) info.second++;
+        else if (i == 2) info.first++;
+
+        info.score = (1.0 * info.first + 0.5 * info.second + 0.2 * info.third) / 100.0;
+    }
+    maintainRecentResults();
+
 }

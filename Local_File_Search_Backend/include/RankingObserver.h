@@ -3,6 +3,7 @@
 
 #include "IObserver.h"
 #include "SearchResult.h"
+#include "DatabaseConnector.h"
 #include <unordered_map>
 #include <queue>
 #include <vector>
@@ -21,8 +22,8 @@ struct RankingInfo {
 class RankingObserver : public IObserver {
 public:
     RankingObserver(DatabaseConnector* db);
-    void update(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) override;
-    const std::vector<SearchResult> &getRankingResults() const;
+    void update() override;
+    const std::vector<SearchResult> RankingObserver::getRankingResults(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery);
 
 
 private:
