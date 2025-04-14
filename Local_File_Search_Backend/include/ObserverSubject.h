@@ -7,7 +7,7 @@
 #include <string>
 #include <algorithm>
 
-class ObserverContext {
+class ObserverSubject {
 public:
     void attach(IObserver* observer);
     void detach(IObserver* observer);

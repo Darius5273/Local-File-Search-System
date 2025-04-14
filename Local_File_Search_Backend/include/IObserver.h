@@ -9,7 +9,7 @@
 class IObserver {
 public:
     virtual ~IObserver() = default;
-    virtual void update(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) = 0;
+    virtual void update() = 0;
 };
 
 #endif // IOBSERVER_H
