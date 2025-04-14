@@ -11,12 +11,13 @@ public:
     void parse(const std::string& query);
     const std::unordered_map<std::string, std::vector<std::string>>& getParsedQuery() const;
 
+    void reset();
+
 private:
     std::unordered_map<std::string, std::vector<std::string>> parsedQuery;
     const std::set<std::string> validQualifiers = {"color", "path", "content"};
 
 
-    void reset();
     void addQualifierValue(const std::string& qualifier, const std::string& value);
 };
 

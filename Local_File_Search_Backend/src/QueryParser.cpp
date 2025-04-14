@@ -57,7 +57,14 @@ void QueryParser::parse(const std::string& query) {
 
             addQualifierValue(qualifier, value);
         }
+        else {
+            throw std::runtime_error("Invalid query");
+        }
+
     }
+
+    if (parsedQuery.empty())
+        throw std::runtime_error("Invalid query");
 }
 
 const std::unordered_map<std::string, std::vector<std::string>>& QueryParser::getParsedQuery() const {
