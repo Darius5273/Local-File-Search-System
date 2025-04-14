@@ -1,0 +1,76 @@
+.crawler-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background-color: #f2f4f8; 
+  }
+  
+  .crawler-form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px; 
+  }
+  
+  .crawler-form input
+{
+    width: 90%;
+    padding: 15px; 
+    margin-bottom: 16px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+  .crawler-form select {
+    width: 96.2%;
+    padding: 15px; 
+    margin-bottom: 16px; 
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  
+  .crawler-form h1 {
+    text-align: center;
+    font-size: 2rem;
+    color: #2b6cb0; 
+  }
+  
+  .crawler-form .flex-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; 
+  }
+  
+  .crawler-form .flex-buttons button {
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .crawler-form .flex-buttons button:first-child {
+    background-color: #3182ce;
+    color: white;
+  }
+  
+  .crawler-form .flex-buttons button:first-child:hover {
+    background-color: #2b6cb0;
+  }
+  
+  .crawler-form .flex-buttons button:last-child {
+    background-color: transparent;
+    color: #3182ce;
+    border: 2px solid #3182ce;
+  }
+  
+  .crawler-form .flex-buttons button:last-child:hover {
+    background-color: #e5f1fe;
+    color: #2b6cb0;
+  }
+  

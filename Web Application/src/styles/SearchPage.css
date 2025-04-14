@@ -1,0 +1,148 @@
+/* Full screen container */
+.full-screen {
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+  }
+  
+  .search-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: #f0f4f8;
+  }
+  
+  /* Gradient header box */
+  .gradient-box {
+    width: 100%;
+    max-width: 1000px;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    padding: 2rem;
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    position: relative;
+    margin-bottom: 3rem;
+  }
+  
+  /* Search bar container */
+  .search-bar-wrapper {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  
+  /* Form to align search bar and button side by side */
+  .search-bar-wrapper form {
+    display: flex;
+    width: 100%;
+  }
+  
+  /* Styling for the search input field */
+  .search-bar-wrapper input {
+    height: 30px;
+    padding: 0 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    flex-grow: 1;
+    font-size: 16px;
+    outline: none;
+  }
+  
+  /* Styling for the search button */
+  .search-bar-wrapper button {
+    height: 30px;
+    padding: 0 1.5rem;
+    border: none;
+    background-color: #3182ce;
+    color: white;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+  }
+  
+  .search-bar-wrapper button:hover {
+    background-color: #764ba2;
+  }
+  
+  /* Main content area (search results & suggestions) */
+  .main-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    width: 100%;
+    max-width: 1200px;
+  }
+
+  .error-message {
+    color: #e53e3e; /* Red color for errors */
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  
+  /* Styling for the results section */
+  .results-wrapper {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Styling for the suggestions box */
+  .suggestions-box {
+    flex: 0 0 250px;
+    max-width: 30%;
+    padding: 15px;
+    border: 1px solid #ccc;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  /* Suggestions list styles */
+  .suggestions-box ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Styling for each suggestion item */
+  .suggestions-box li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+    color: #333;
+  }
+  
+  .suggestions-box li:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* File crawler button (positioned on top-left of the page) */
+  .file-crawler-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: none;
+    border: none;
+    color: #c3dafe;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  
+  /* Footer or additional sections styling (if needed) */
+  footer {
+    margin-top: 2rem;
+    color: #333;
+    font-size: 14px;
+    text-align: center;
+  }
+  
