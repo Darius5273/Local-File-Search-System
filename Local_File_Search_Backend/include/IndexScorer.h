@@ -12,13 +12,19 @@ public:
                             const std::string& mime_type, const std::string& modified_time,
                             long long size, bool is_text);
 
-private:
     static double pathDepthScore(const std::string& path);
+
     static double pathLengthScore(const std::string& path);
+
     static double mimeTypeScore(const std::string& mime_type, const std::string& extension);
+
     static double sizeScore(long long size);
+
     static double recencyScore(const std::string& modified_time);
+
     static double textScore(bool is_text);
+
+private:
 
     static int getPathDepth(const std::string& path);
 };
