@@ -3,7 +3,7 @@
 
 using json = nlohmann::json;
 
-SearchController::SearchController(SearchEngine& searchEngine) : searchEngine(searchEngine) {}
+SearchController::SearchController(ISearch& searchEngine) : searchEngine(searchEngine) {}
 
 void SearchController::registerRoutes(httplib::Server& server) {
     server.Post("/search", [this](const httplib::Request& req, httplib::Response& res) {
@@ -32,12 +32,10 @@ void SearchController::handleSearch(const httplib::Request& req, httplib::Respon
         queryParser.parse(query);
         auto parsedQuery= queryParser.getParsedQuery();
 
-
+        auto bundle = searchEngine.search(parsedQuery);
         json response;
-        response["suggestions"] = searchEngine.getSuggestions(parsedQuery);
-
-        const auto& rankingResults = searchEngine.getRankingResults(parsedQuery);
-        for (const auto& result : rankingResults) {
+        response["suggestions"] = bundle.suggestions;
+        for (const auto& result : bundle.rankingResults) {
             response["rankingResults"].push_back({
                                                          {"path", result.path},
                                                          {"score", result.score},
@@ -45,11 +43,7 @@ void SearchController::handleSearch(const httplib::Request& req, httplib::Respon
                                                          {"is_image", result.is_image}
                                                  });
         }
-
         res.set_content(response.dump(), "application/json");
-        std::thread([this]() {
-            searchEngine.update();
-        }).detach();
     }
     catch (const std::runtime_error& e) {
         res.status = 400;

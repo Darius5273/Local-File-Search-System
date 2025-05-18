@@ -114,6 +114,7 @@
 #include "../include/CrawlerController.h"
 #include "../include/SearchEngine.h"
 #include "../include/ImageController.h"
+#include "../include/SearchEngineProxy.h"
 
 int main() {
     httplib::Server server;
@@ -121,7 +122,8 @@ int main() {
     const std::string& configFile = "../../config.txt";
     DatabaseConnector db(configFile);
     SearchEngine searchEngine(&db);
-    SearchController searchController(searchEngine);
+    SearchEngineProxy proxyEngine(searchEngine, 100);
+    SearchController searchController(proxyEngine);
     CrawlerController crawlerController(configFile);
     ImageController imageController;
 

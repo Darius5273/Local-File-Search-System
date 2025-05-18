@@ -1,3 +1,4 @@
+#include <thread>
 #include "../include/SearchEngine.h"
 
 
@@ -26,4 +27,16 @@ std::vector<std::string> SearchEngine::getSuggestions(std::unordered_map<std::st
 std::vector<SearchResult> SearchEngine::getRankingResults(std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
     std::vector<SearchResult> rankingResults = rankingObserver->getRankingResults(parsedQuery);
     return rankingResults;
+}
+
+QueryResultBundle SearchEngine::search(const std::unordered_map<std::string, std::vector<std::string>>& parsedQuery) {
+    QueryResultBundle bundle;
+    bundle.suggestions = getSuggestions(const_cast<std::unordered_map<std::string, std::vector<std::string>>&>(parsedQuery));
+    bundle.rankingResults = getRankingResults(const_cast<std::unordered_map<std::string, std::vector<std::string>>&>(parsedQuery));
+
+    std::thread([this]() {
+        this->update();
+    }).detach();
+
+    return bundle;
 }
