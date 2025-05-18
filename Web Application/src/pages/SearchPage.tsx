@@ -5,17 +5,21 @@ import SearchResults from '../components/SearchResults';
 import { searchFiles } from '../api/SearchApi.tsx';
 import '../styles/SearchPage.css';
 import { SearchResponse } from '../interfaces/SearchResponse';
-import { SearchResult } from '../interfaces/SearchResult';
 import { fetchImage } from '../api/ImagesApi.tsx';
+import { setSpellStrategy } from '../api/SpellApi.tsx';
+import { SearchResult } from '../interfaces/SearchResult.tsx';
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [spellStrategy, setSpellStrategyState] = useState('noSpellCheck');
   const [error, setError] = useState<string | null>(null);
   const [imageMap, setImageMap] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState(false);
+  const [correctedQuery, setCorrectedQuery] = useState("");
+  const [showCorrectedQuery, setShowCorrectedQuery] = useState(false);
 
   const handleSearch = async () => {
     try {
@@ -25,7 +29,9 @@ const SearchPage: React.FC = () => {
       const response: SearchResponse = await searchFiles(query);
       setSuggestions(response.suggestions || []);
       setResults(response.rankingResults || []);
+      setCorrectedQuery(response.correctedQuery || "");
       const newImageMap: Record<string, string> = {};
+      if (response.rankingResults) {
       await Promise.all(
         response.rankingResults.map(async (result) => {
           if (result.is_image) {
@@ -38,10 +44,25 @@ const SearchPage: React.FC = () => {
           }
         })
       );
+    }
       setImageMap(newImageMap);
       setLoadingImages(false);
     } catch (err: any) {
       setError(err.message);
+    }
+  };
+
+  const handleStrategyChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const strategy = e.target.value;
+    setSpellStrategyState(strategy);
+    if (strategy == "none")
+      setShowCorrectedQuery(false);
+    else
+      setShowCorrectedQuery(true);
+    try {
+      await setSpellStrategy(strategy); 
+    } catch (err) {
+      setError('Failed to update spell strategy');
     }
   };
 
@@ -62,7 +83,23 @@ const SearchPage: React.FC = () => {
       </div>
 
       {error && <p className="error-message">{error}</p>}
-
+      <div style={{ marginBottom: '1rem' }}>
+        <label htmlFor="strategy-select">Spell Correction Strategy: </label>
+        <select
+          id="strategy-select"
+          value={spellStrategy}
+          onChange={handleStrategyChange}
+        >
+          <option value="none">No Correction</option>
+          <option value="englishSpellCheck">English Spell Check</option>
+        </select>
+        {showCorrectedQuery && (
+        <>
+          <p><strong>Results shown for: </strong> {correctedQuery}</p>
+        </>)
+        }
+      </div>
+      
       <div className="main-content">
         <div className="results-wrapper">
           <SearchResults results={results} imageMap={imageMap}/>
