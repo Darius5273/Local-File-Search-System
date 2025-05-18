@@ -4,15 +4,18 @@
 #include "httplib.h"
 #include <memory>
 #include "../include/SearchEngine.h"
+#include "ISpellCorrectionStrategy.h"
 
 class SearchController {
 public:
-    explicit SearchController(SearchEngine& searchEngine);
+    explicit SearchController(ISearch& searchEngine, ISpellCorrectionStrategy* strategy);
 
+    ISpellCorrectionStrategy* spellStrategy;
     void registerRoutes(httplib::Server& server);
+    void setSpellCorrectionStrategy(ISpellCorrectionStrategy* strategy);
 
 private:
-    SearchEngine searchEngine;
+    ISearch& searchEngine;
     QueryParser queryParser;
     void handleSearch(const httplib::Request& req, httplib::Response& res);
 };

@@ -115,21 +115,32 @@
 #include "../include/SearchEngine.h"
 #include "../include/ImageController.h"
 #include "../include/SearchEngineProxy.h"
+#include "../include/DictionaryLoader.h"
+#include "../include/EnglishSpellCorrectionStrategy.h"
+#include "../include/NoSpellCorrectionStrategy.h"
+#include "../include/SpellCheckerController.h"
 
 int main() {
     httplib::Server server;
 
+    auto wordFreq = loadWordFrequencies("big.txt");
+    auto colorFreq = loadColorFrequencies();
+    EnglishSpellCorrectionStrategy englishSpell(wordFreq, colorFreq);
+    NoSpellCorrectionStrategy noSpell;
     const std::string& configFile = "../../config.txt";
     DatabaseConnector db(configFile);
     SearchEngine searchEngine(&db);
     SearchEngineProxy proxyEngine(searchEngine, 100);
-    SearchController searchController(proxyEngine);
+    SearchController searchController(proxyEngine, &noSpell);
+    SpellCheckerController spellCheckerController(searchController, &englishSpell, &noSpell);
     CrawlerController crawlerController(configFile);
     ImageController imageController;
+
 
     imageController.registerRoutes(server);
     searchController.registerRoutes(server);
     crawlerController.registerRoutes(server);
+    spellCheckerController.registerRoutes(server);
 
     std::cout << "Server running at http://localhost:8080\n";
     server.set_pre_routing_handler([](const httplib::Request &req, httplib::Response &res) {

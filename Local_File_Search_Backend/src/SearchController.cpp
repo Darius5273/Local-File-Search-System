@@ -3,12 +3,16 @@
 
 using json = nlohmann::json;
 
-SearchController::SearchController(ISearch& searchEngine) : searchEngine(searchEngine) {}
-
+SearchController::SearchController(ISearch& engine, ISpellCorrectionStrategy* strategy)
+        : searchEngine(engine), spellStrategy(strategy) {}
 void SearchController::registerRoutes(httplib::Server& server) {
     server.Post("/search", [this](const httplib::Request& req, httplib::Response& res) {
         handleSearch(req, res);
     });
+}
+
+void SearchController::setSpellCorrectionStrategy(ISpellCorrectionStrategy* strategy) {
+    spellStrategy = strategy;
 }
 
 void SearchController::handleSearch(const httplib::Request& req, httplib::Response& res) {
@@ -32,17 +36,20 @@ void SearchController::handleSearch(const httplib::Request& req, httplib::Respon
         queryParser.parse(query);
         auto parsedQuery= queryParser.getParsedQuery();
 
-        auto bundle = searchEngine.search(parsedQuery);
+        std::string correctedQueryString;
+        auto correctedParsedQuery = spellStrategy->correct(parsedQuery, correctedQueryString);
+        auto bundle = searchEngine.search(correctedParsedQuery);
         json response;
+        response["correctedQuery"] = correctedQueryString;
         response["suggestions"] = bundle.suggestions;
         for (const auto& result : bundle.rankingResults) {
-            response["rankingResults"].push_back({
-                                                         {"path", result.path},
-                                                         {"score", result.score},
-                                                         {"preview", result.previewText},
-                                                         {"is_image", result.is_image}
-                                                 });
-        }
+                response["rankingResults"].push_back({
+                                                             {"path", result.path},
+                                                             {"score", result.score},
+                                                             {"preview", result.previewText},
+                                                             {"is_image", result.is_image}
+                                                     });
+            }
         res.set_content(response.dump(), "application/json");
     }
     catch (const std::runtime_error& e) {

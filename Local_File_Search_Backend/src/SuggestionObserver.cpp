@@ -104,16 +104,15 @@ void SuggestionObserver::collectPrefixMatches(const std::vector<std::string>& pa
 
 
     for (const auto &part: parts) {
-        for (const auto &part: parts) {
-            for (size_t i = 1; i <= part.size(); ++i) {
-                auto it = index.find(part.substr(0, i));
-                if (it != index.end()) {
-                    candidates.insert(it->second.begin(), it->second.end());
-                }
+        for (size_t i = 1; i <= part.size(); ++i) {
+            auto it = index.find(part.substr(0, i));
+            if (it != index.end()) {
+                candidates.insert(it->second.begin(), it->second.end());
             }
         }
     }
 }
+
 
 void SuggestionObserver::formatSuggestion(std::string& suggestion){
     std::replace(suggestion.begin(), suggestion.end(), '|', ' ');
