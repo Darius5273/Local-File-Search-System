@@ -8,6 +8,7 @@ import { SearchResponse } from '../interfaces/SearchResponse';
 import { fetchImage } from '../api/ImagesApi.tsx';
 import { setSpellStrategy } from '../api/SpellApi.tsx';
 import { SearchResult } from '../interfaces/SearchResult.tsx';
+import MetadataAnalyzer from '../components/MetadataSummary.tsx';
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const SearchPage: React.FC = () => {
   const [loadingImages, setLoadingImages] = useState(false);
   const [correctedQuery, setCorrectedQuery] = useState("");
   const [showCorrectedQuery, setShowCorrectedQuery] = useState(false);
+  const [response, setResponse] = useState<SearchResponse>();
 
   const handleSearch = async () => {
     try {
@@ -30,6 +32,7 @@ const SearchPage: React.FC = () => {
       setSuggestions(response.suggestions || []);
       setResults(response.rankingResults || []);
       setCorrectedQuery(response.correctedQuery || "");
+      setResponse(response);
       const newImageMap: Record<string, string> = {};
       if (response.rankingResults) {
       await Promise.all(
@@ -113,6 +116,7 @@ const SearchPage: React.FC = () => {
             ))}
           </ul>
         </div>
+         {response && <MetadataAnalyzer metadata={response} />}
       </div>
     </div>
   );
