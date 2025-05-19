@@ -39,7 +39,7 @@ void SearchController::handleSearch(const httplib::Request& req, httplib::Respon
         std::string correctedQueryString;
         auto correctedParsedQuery = spellStrategy->correct(parsedQuery, correctedQueryString);
         auto bundle = searchEngine.search(correctedParsedQuery);
-        json response;
+        json response = searchResultAnalyser.analyzeMetadata(bundle.rankingResults);
         response["correctedQuery"] = correctedQueryString;
         response["suggestions"] = bundle.suggestions;
         for (const auto& result : bundle.rankingResults) {
