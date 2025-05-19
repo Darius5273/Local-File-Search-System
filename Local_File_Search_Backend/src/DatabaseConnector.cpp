@@ -143,9 +143,13 @@ std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vect
         std::string sql;
         pqxx::work txn(*conn);
         if (color.empty()) {
-            sql = R"SQL(
+            sql += R"SQL(
+                       SELECT cte.path, cte.score, cte.preview, m1.size, m1.mime_type, m1.extension, m1.modified_time
+                       FROM (
+                    )SQL";
+            sql += R"SQL(
                 SELECT
-                    f.path, f.score, m.mime_type,
+                    f.id, f.path, f.score, m.mime_type,
                     substring(tc.content FROM 1 FOR 100) AS preview
                 FROM files f
                 LEFT JOIN textual_content tc ON f.id = tc.file_id
@@ -154,9 +158,13 @@ std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vect
             )SQL";
         }
         else {
-            sql = R"SQL(
+            sql += R"SQL(
+                       SELECT cte.path, cte.score, m1.size, m1.mime_type, m1.extension, m1.modified_time
+                       FROM (
+                    )SQL";
+            sql += R"SQL(
                 SELECT
-                    f.path, f.score
+                    f.id, f.path, f.score
                 FROM files f
                 JOIN images i ON f.id = i.id
                 WHERE
@@ -177,7 +185,10 @@ std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vect
             params.push_back(color);
         }
 
-        sql += " ORDER BY f.score DESC LIMIT 100;";
+        sql += " ORDER BY f.score DESC "
+               "LIMIT 100"
+               ") cte "
+               "JOIN metadata m1 ON m1.id = cte.id;";
 
         pqxx::result res = txn.exec_params(sql, pqxx::prepare::make_dynamic_params(params));
 
@@ -199,7 +210,11 @@ std::vector<SearchResult> DatabaseConnector::queryByPathAndColor(const std::vect
             catch (const std::exception &e) {
                 is_image = true;
             }
-            results.emplace_back(path, score, preview, is_image);
+            int size = row["size"].as<int>();
+            std::string extension = row["extension"].c_str();
+            std::string mime_type = row["mime_type"].c_str();
+            std::string modified_time = row["modified_time"].c_str();
+            results.emplace_back(path, score, preview, is_image, size, mime_type, extension, modified_time);
         }
 
     } catch (const std::exception& e) {
@@ -223,8 +238,10 @@ std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<st
         }
 
         std::string sql = R"SQL(
+           SELECT cte.path, cte.score, cte.preview, m1.size, m1.mime_type, m1.extension, m1.modified_time
+           FROM (
             SELECT
-                f.path, f.score,
+                f.id, f.path, f.score,
                 ts_headline('simple', tc.content, query, 'MaxFragments=1, MaxWords=100') AS preview
             FROM (
                 SELECT
@@ -236,7 +253,9 @@ std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<st
             ) tc
             JOIN files f ON f.id = tc.file_id
             ORDER BY f.score DESC
-            LIMIT 100;
+            LIMIT 100
+            ) cte
+            JOIN metadata m1 ON m1.id = cte.id
         )SQL";
 
         pqxx::result res = txn.exec_params(sql, tsqueryStr);
@@ -245,7 +264,11 @@ std::vector<SearchResult> DatabaseConnector::queryByContent(const std::vector<st
             std::string path = row["path"].c_str();
             std::string preview = row["preview"].c_str();
             double score = row["score"].as<double>();
-            results.emplace_back(path, score, preview);
+            int size = row["size"].as<int>();
+            std::string extension = row["extension"].c_str();
+            std::string mime_type = row["mime_type"].c_str();
+            std::string modified_time = row["modified_time"].c_str();
+            results.emplace_back(path, score, preview, size, mime_type, extension, modified_time);
         }
 
     } catch (const std::exception& e) {
@@ -326,8 +349,10 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
             }
         }
 
-        sql += "SELECT "
-               "f.path, f.score, ts_headline('simple', tc.content, query, 'MaxFragments=1, MaxWords=100') AS preview "
+        sql += "SELECT cte.path, cte.score, cte.preview, m1.size, m1.mime_type, m1.extension, m1.modified_time "
+               "FROM ( "
+                "SELECT "
+               "f.id, f.path, f.score, ts_headline('simple', tc.content, query, 'MaxFragments=1, MaxWords=100') AS preview "
                "FROM ( "
                "SELECT file_id, content, to_tsquery('simple', $1) AS query "
                "FROM textual_content "
@@ -348,7 +373,9 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
             }
         }
 
-        sql += " ORDER BY f.score DESC LIMIT 100;";
+        sql += " ORDER BY f.score DESC LIMIT 100"
+               ") cte "
+               "JOIN metadata m1 ON m1.id = cte.id";
 
         pqxx::result res = txn.exec_params(sql, pqxx::prepare::make_dynamic_params(params));
 
@@ -356,7 +383,11 @@ std::vector<SearchResult> DatabaseConnector::query(const std::unordered_map<std:
             std::string path = row["path"].c_str();
             std::string preview = row["preview"].c_str();
             double score = row["score"].as<double>();
-            results.emplace_back(path, score, preview);
+            int size = row["size"].as<int>();
+            std::string extension = row["extension"].c_str();
+            std::string mime_type = row["mime_type"].c_str();
+            std::string modified_time = row["modified_time"].c_str();
+            results.emplace_back(path, score, preview, size, mime_type, extension, modified_time);
         }
 
     } catch (const std::exception& e) {
