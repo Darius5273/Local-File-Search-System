@@ -6,6 +6,11 @@ interface Props {
 }
 
 export default function SearchResults({ results, imageMap }: Props) {
+  if (!results) {
+    return (
+          <div className="space-y-6"></div>
+    )
+  }
   return (
     <div className="space-y-6">
       {results.map((result, index) => (

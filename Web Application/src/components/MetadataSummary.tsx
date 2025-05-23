@@ -1,6 +1,7 @@
 import React from "react";
 import { SearchResponse } from "../interfaces/SearchResponse";
 import '../styles/SearchPage.css';
+import { FaIcons } from "react-icons/fa";
 interface Props {
   metadata: SearchResponse;
 }
