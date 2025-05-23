@@ -53,13 +53,12 @@ nlohmann::json SearchResultAnalyzer::analyzeMetadata(const std::vector<SearchRes
 
     for (const auto& r : results) {
         ++mimeCategories[mimeToCategory(r.mime_type)];
-        auto ext = r.extension.substr(1);
+        auto ext = r.extension.empty() ? "other" : r.extension.substr(1);
         ++extensionCount[ext];
 
-        if (r.modified_time.size() >= 4) {
-            std::string year = r.modified_time.substr(0, 4);
-            ++yearCount[year];
-        }
+        std::string year = r.modified_time.substr(0, 4);
+        ++yearCount[year];
+
 
         ++sizeBuckets[sizeToBucket(r.size)];
         totalSize += r.size;
