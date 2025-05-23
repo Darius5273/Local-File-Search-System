@@ -31,7 +31,7 @@ std::string EnglishSpellCorrectionStrategy::bestMatch(const std::string& word, c
     auto candidatesEdit1 = edits1(word);
     std::string best = word;
     int maxFreq = 0;
-    std::set<std::string> candidatesEdit2;
+    std::unordered_set<std::string> candidatesEdit2;
 
     for (const auto& c : candidatesEdit1) {
         auto it = pool.find(c);
@@ -39,15 +39,21 @@ std::string EnglishSpellCorrectionStrategy::bestMatch(const std::string& word, c
             best = it->first;
             maxFreq = it->second;
         }
-        auto newCandidates = edits1(c);
-        candidatesEdit2.insert(newCandidates.begin(),newCandidates.end());
     }
 
-    for (const auto& c : candidatesEdit2) {
-        auto it = pool.find(c);
-        if (it != pool.end() && it->second > maxFreq) {
-            best = it->first;
-            maxFreq = it->second;
+    if (best != word)
+        return best;
+
+    for (const auto& c: candidatesEdit1)
+    {
+        auto newCandidates = edits1(c);
+        for (const auto& nc : newCandidates)
+        {
+            auto it = pool.find(c);
+            if (it != pool.end() && it->second > maxFreq) {
+                best = it->first;
+                maxFreq = it->second;
+            }
         }
     }
 
