@@ -12,11 +12,13 @@ public:
                                ISpellCorrectionStrategy* none);
 
     void registerRoutes(httplib::Server& server);
+    std::string getCurrentSpellStrategy() const;
 
 private:
     SearchController& searchController;
     std::unique_ptr<ISpellCorrectionStrategy> englishSpell;
     std::unique_ptr<ISpellCorrectionStrategy> noSpell;
+    std::string currentStrategyName = "noSpellCheck";
 };
 
 #endif //SPELLCHECKERCONTROLLER_H
