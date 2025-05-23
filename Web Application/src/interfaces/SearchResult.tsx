@@ -3,4 +3,5 @@ export interface SearchResult {
   score: number;
   preview?: string;
   is_image: boolean;
+  correctedQuery: string;
 }
