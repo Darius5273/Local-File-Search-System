@@ -47,13 +47,6 @@ void SuggestionObserver::update() {
             colorIndex[values.front()].insert(lastQueryComponent.query);
         }
     }
-//    printSuggestions();
-//    printRecentKeys();
-//    printLastQueryComponent();
-//    printLastParsedQuery();
-//    printFreqMap();
-//    printPathIndex();
-//    printContentIndex();
 
 }
 
@@ -72,9 +65,7 @@ std::vector<std::string> SuggestionObserver::getSuggestions(const std::unordered
     std::set<std::string> candidateKeys;
     collectPrefixMatches(paths, pathIndex, candidateKeys);
     collectPrefixMatches(contents, contentIndex, candidateKeys);
-//    std::priority_queue<QueryComponent, std::vector<QueryComponent>> results;
-//    collectPrefixMatches(paths, pathIndex, results);
-//    collectPrefixMatches(contents, contentIndex, results);
+
     for (const auto &candidate: colorIndex[color]) {
         candidateKeys.insert(candidate);
     }
