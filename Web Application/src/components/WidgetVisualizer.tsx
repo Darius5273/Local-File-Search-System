@@ -12,8 +12,8 @@ interface WidgetVisualizerProps {
 
 
   const WidgetVisualizer: React.FC<WidgetVisualizerProps> = ({ keywordWidgets, contextWidgets, results }) => {
-  const navigate = useNavigate();
 
+  const navigate = useNavigate()
   const textWidgets = contextWidgets ? contextWidgets.split('//') : [];
   const hasIcons = keywordWidgets && keywordWidgets.some(w => w.icon?.trim().length > 0);
   const shouldShowTitle = (textWidgets.length > 0) || hasIcons;

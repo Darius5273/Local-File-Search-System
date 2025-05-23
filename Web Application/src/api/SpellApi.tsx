@@ -14,3 +14,12 @@ export async function setSpellStrategy(strategy: string): Promise<void> {
     throw new Error('Failed to update spell strategy');
   }
 }
+
+export const getSpellStrategy = async (): Promise<string> => {
+  try {
+    const response = await axiosInstance.get('/spell-strategy');
+    return response.data.strategy;
+  } catch (error) {
+    throw new Error('Failed to fetch current spell strategy');
+  }
+};

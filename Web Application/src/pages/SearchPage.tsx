@@ -6,7 +6,7 @@ import { searchFiles } from '../api/SearchApi.tsx';
 import '../styles/SearchPage.css';
 import { SearchResponse } from '../interfaces/SearchResponse';
 import { fetchImage } from '../api/ImagesApi.tsx';
-import { setSpellStrategy } from '../api/SpellApi.tsx';
+import { getSpellStrategy, setSpellStrategy } from '../api/SpellApi.tsx';
 import { SearchResult } from '../interfaces/SearchResult.tsx';
 import MetadataAnalyzer from '../components/MetadataSummary.tsx';
 import WidgetVisualizer from '../components/WidgetVisualizer.tsx';
@@ -16,7 +16,7 @@ const SearchPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [spellStrategy, setSpellStrategyState] = useState('noSpellCheck');
+  const [spellStrategy, setSpellStrategyState] = useState<string>();
   const [error, setError] = useState<string | null>(null);
   const [imageMap, setImageMap] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState(false);
@@ -34,6 +34,8 @@ const SearchPage: React.FC = () => {
       setResults(response.rankingResults || []);
       setCorrectedQuery(response.correctedQuery || "");
       setResponse(response);
+      if (spellStrategy !== "noSpellCheck")
+        setShowCorrectedQuery(true);
       const newImageMap: Record<string, string> = {};
       if (response.rankingResults) {
       await Promise.all(
@@ -56,13 +58,22 @@ const SearchPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+  const fetchStrategy = async () => {
+    const strategy = await getSpellStrategy(); 
+    setSpellStrategyState(strategy);
+  };
+  fetchStrategy();
+}, []);
+
+
   const handleStrategyChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const strategy = e.target.value;
     setSpellStrategyState(strategy);
-    if (strategy == "none")
+    if (strategy == "noSpellCheck")
       setShowCorrectedQuery(false);
-    else
-      setShowCorrectedQuery(true);
+    // else
+    //   setShowCorrectedQuery(true);
     try {
       await setSpellStrategy(strategy); 
     } catch (err) {
@@ -94,7 +105,7 @@ const SearchPage: React.FC = () => {
           value={spellStrategy}
           onChange={handleStrategyChange}
         >
-          <option value="none">No Correction</option>
+          <option value="noSpellCheck">No Correction</option>
           <option value="englishSpellCheck">English Spell Check</option>
         </select>
         {showCorrectedQuery && (
