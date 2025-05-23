@@ -9,6 +9,7 @@ import { fetchImage } from '../api/ImagesApi.tsx';
 import { setSpellStrategy } from '../api/SpellApi.tsx';
 import { SearchResult } from '../interfaces/SearchResult.tsx';
 import MetadataAnalyzer from '../components/MetadataSummary.tsx';
+import WidgetVisualizer from '../components/WidgetVisualizer.tsx';
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -101,7 +102,12 @@ const SearchPage: React.FC = () => {
           <p><strong>Results shown for: </strong> {correctedQuery}</p>
         </>)
         }
+        {(response?.contextWidgets && response.contextWidgets.length > 0 || response?.keywordWidgets) && (
+        <WidgetVisualizer keywordWidgets={response.keywordWidgets} contextWidgets={response.contextWidgets || ""} results = {response.rankingResults} />
+        )}
+
       </div>
+      
       
       <div className="main-content">
         <div className="results-wrapper">
