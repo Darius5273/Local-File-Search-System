@@ -6,6 +6,7 @@
 #include "../include/SearchEngine.h"
 #include "ISpellCorrectionStrategy.h"
 #include "SearchResultAnalyzer.h"
+#include "WidgetManager.h"
 
 class SearchController {
 public:
@@ -19,6 +20,7 @@ private:
     ISearch& searchEngine;
     QueryParser queryParser;
     SearchResultAnalyzer searchResultAnalyser;
+    WidgetManager widgetManager;
     void handleSearch(const httplib::Request& req, httplib::Response& res);
 };
 

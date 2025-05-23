@@ -1,10 +1,16 @@
 #include "../include/SearchController.h"
+#include "../include/ImageGalleryWidget.h"
+#include "../include/ProgrammingLanguageWidget.h"
+#include "../include/WidgetFactory.h"
 #include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
 SearchController::SearchController(ISearch& engine, ISpellCorrectionStrategy* strategy)
-        : searchEngine(engine), spellStrategy(strategy) {}
+        : searchEngine(engine), spellStrategy(strategy) {
+    widgetManager.registerObserver(std::make_shared<ImageGalleryWidget>());
+    widgetManager.registerObserver(std::make_shared<ProgrammingLanguageWidget>());
+}
 void SearchController::registerRoutes(httplib::Server& server) {
     server.Post("/search", [this](const httplib::Request& req, httplib::Response& res) {
         handleSearch(req, res);
@@ -40,6 +46,24 @@ void SearchController::handleSearch(const httplib::Request& req, httplib::Respon
         auto correctedParsedQuery = spellStrategy->correct(parsedQuery, correctedQueryString);
         auto bundle = searchEngine.search(correctedParsedQuery);
         json response = searchResultAnalyser.analyzeMetadata(bundle.rankingResults);
+
+        WidgetFactory widgetFactory;
+        auto keywordWidgets = widgetFactory.createWidgets(correctedParsedQuery);
+        json keywordWidgetsJson = json::array();
+        for (const auto& w : keywordWidgets) {
+            keywordWidgetsJson.push_back(w->toJson());
+        }
+        response["keywordWidgets"] = keywordWidgetsJson;
+
+        widgetManager.updateAll(correctedParsedQuery, bundle.rankingResults);
+        std::string contextWidgets;
+        auto activeContextWidgets = widgetManager.getActiveWidgets();
+        for (const auto& w : activeContextWidgets)
+        {
+            contextWidgets += w + "//";
+        }
+        response["contextWidgets"] = contextWidgets;
+
         response["correctedQuery"] = correctedQueryString;
         response["suggestions"] = bundle.suggestions;
         for (const auto& result : bundle.rankingResults) {
